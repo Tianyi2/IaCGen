@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for single SNS.
+
+Resources:
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+      - Endpoint: test@test.com
+        Protocol: email

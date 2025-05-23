@@ -1,0 +1,121 @@
+#
+# This template demonstrates how to configure Amazon Route53 Application Recovery Controller Routing Controls
+#
+# ***************************************************
+# RUNNING THIS TEMPLATE COSTS $60/day ($2.5/hour) 
+# BE SURE TO DELETE THIS STACK WHEN NO LONGER NEEDED
+# ***************************************************
+#
+# For a full description of how it works, please read
+# https://aws.amazon.com/fr/blogs/aws/amazon-route-53-application-recovery-controller/
+#
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Amazon Route53 Application Recovery Controller cluster and routing control for the Tic Tac Toe Demo app'
+Parameters:
+  Region1:
+    Default: us-east-1
+    Description: The region for the first cell
+    Type: String 
+
+  Region2:
+    Default: us-west-2
+    Description: The region for the second cell
+    Type: String 
+
+  ProjectId:
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: Must begin with a letter and contain only alphanumeric
+      characters.
+    Default: TicTacToe
+    Description: The name of the project
+    MaxLength: '64'
+    MinLength: '1'
+    Type: String
+
+Resources:
+
+#
+# The Application Recovery Controller cluster
+#
+
+  Cluster:
+    Type: AWS::Route53RecoveryControl::Cluster
+    Properties:
+      Name: !Sub ${ProjectId}-Cluster
+
+#
+# The Application Recovery Controller control panel
+#
+
+  ControlPanel:
+    Type: AWS::Route53RecoveryControl::ControlPanel
+    Properties:
+      Name: !Sub ${ProjectId}-ControlPanel
+      ClusterArn: !Ref Cluster
+
+#
+# The Application Recovery Controller routing controls
+#
+
+  RoutingControlCell1:
+    Type: AWS::Route53RecoveryControl::RoutingControl
+    Properties:
+      Name: !Sub ${ProjectId}-Cell1-${Region1}
+      ClusterArn: !Ref Cluster
+      ControlPanelArn: !Ref ControlPanel
+ 
+  RoutingControlCell2:
+    Type: AWS::Route53RecoveryControl::RoutingControl
+    Properties:
+      Name: !Sub ${ProjectId}-Cell2-${Region2}
+      ClusterArn: !Ref Cluster
+      ControlPanelArn: !Ref ControlPanel
+
+#
+# The Application Recovery Controller safety rules
+#
+
+  SafetyRuleMinCellsActive:
+    Type: AWS::Route53RecoveryControl::SafetyRule
+    Properties:
+      Name: !Sub ${ProjectId}-MinCellsActive
+      ControlPanelArn: !Ref ControlPanel
+      AssertionRule:
+        WaitPeriodMs: 5000
+        AssertedControls:
+          - !Ref RoutingControlCell1
+          - !Ref RoutingControlCell2
+      RuleConfig:
+        Type: ATLEAST
+        Threshold: 1
+        Inverted: false
+
+#
+# The Application Recovery Controller healthchecks
+#
+
+  HealthCheckCell1:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      HealthCheckConfig:
+        Type: "RECOVERY_CONTROL"
+        RoutingControlArn: !Ref RoutingControlCell1
+
+  HealthCheckCell2:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      HealthCheckConfig:
+        Type: "RECOVERY_CONTROL"
+        RoutingControlArn: !Ref RoutingControlCell2
+
+Outputs:
+  ClusterArn:
+    Value: !Ref Cluster
+  
+  HealthCheckIdEast:
+    Value: !Ref HealthCheckCell1
+
+  HealthCheckIdWest:
+    Value: !Ref HealthCheckCell2
+  

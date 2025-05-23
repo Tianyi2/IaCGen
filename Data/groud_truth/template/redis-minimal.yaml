@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS in Action: chapter 11 (minimal)'
+Mappings:
+  RegionMap:
+    'eu-north-1':
+      AMI: 'ami-05bc2576a72f22c39'
+    'ap-south-1':
+      AMI: 'ami-0002bdad91f793433'
+    'eu-west-3':
+      AMI: 'ami-0c73cd1c5347436f3'
+    'eu-west-2':
+      AMI: 'ami-029ed17b4ea379178'
+    'eu-west-1':
+      AMI: 'ami-04632f3cef5083854'
+    'ap-northeast-3':
+      AMI: 'ami-0ae88850834d2c589'
+    'ap-northeast-2':
+      AMI: 'ami-0263588f2531a56bd'
+    'ap-northeast-1':
+      AMI: 'ami-0abaa5b0faf689830'
+    'sa-east-1':
+      AMI: 'ami-053a035b046dbb704'
+    'ca-central-1':
+      AMI: 'ami-0173297cea9ba27b0'
+    'ap-southeast-1':
+      AMI: 'ami-0d1d4b8d5a0cd293f'
+    'ap-southeast-2':
+      AMI: 'ami-0f4484f62c4fd8767'
+    'eu-central-1':
+      AMI: 'ami-099ccc441b2ef41ec'
+    'us-east-1':
+      AMI: 'ami-061ac2e015473fbe2'
+    'us-east-2':
+      AMI: 'ami-056b1936002ca8ede'
+    'us-west-1':
+      AMI: 'ami-028f2b5ee08012131'
+    'us-west-2':
+      AMI: 'ami-0e21d4d9303512b8e'
+Resources:
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+       - Key: stack
+         Value: production
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: 10.0.0.0/24
+      AvailabilityZone: "us-east-1a"
+      Tags:
+      - Key: stack
+        Value: production
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: "us-east-1a"
+      Tags:
+      - Key: stack
+        Value: production
+  CacheSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: cache
+      VpcId: !Ref myVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 6379
+        ToPort: 6379
+        CidrIp: '0.0.0.0/0'
+  CacheSubnetGroup:
+    Type: 'AWS::ElastiCache::SubnetGroup'
+    Properties:
+      Description: cache
+      SubnetIds:
+      - Ref: SubnetA
+      - Ref: SubnetB
+  Cache:
+    Type: 'AWS::ElastiCache::CacheCluster'
+    Properties:
+      CacheNodeType: 'cache.t3.micro'
+      CacheSubnetGroupName: !Ref CacheSubnetGroup
+      Engine: redis
+      NumCacheNodes: 1
+      VpcSecurityGroupIds:
+      - !Ref CacheSecurityGroup
+  InstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+      - !Ref InstanceRole
+  InstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: 'ec2.amazonaws.com'
+          Action: 'sts:AssumeRole'
+      Policies:
+      - PolicyName: ssm
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - 'ssmmessages:*' # SSM Agent by https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-setting-up-messageAPIs.html
+            - 'ssm:UpdateInstanceInformation' # SSM agent by https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-setting-up-messageAPIs.html
+            - 'ec2messages:*' # SSM Session Manager by https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-setting-up-messageAPIs.html
+            Resource: '*'
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'vm'
+      VpcId: !Ref myVPC
+  Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: !FindInMap [RegionMap, !Ref 'AWS::Region', AMI]
+      InstanceType: 't3.micro'
+      IamInstanceProfile: !Ref InstanceProfile
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: true
+        DeleteOnTermination: true
+        DeviceIndex: 0
+        GroupSet:
+        - !Ref InstanceSecurityGroup
+        SubnetId: !Ref SubnetA
+Outputs:
+  InstanceId:
+    Value: !Ref Instance
+    Description: 'EC2 Instance ID (connect via Session Manager)'
+  CacheAddress:
+    Value: !GetAtt 'Cache.RedisEndpoint.Address'
+    Description: 'Redis DNS name (resolves to a private IP address)'

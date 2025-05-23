@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Creates a central SNS topic for various AWS service notifications'
+
+Parameters:
+  NotificationEmail:
+    Type: String
+    Description: Email address to receive notifications
+    AllowedPattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+    ConstraintDescription: Must be a valid email address
+    Default: admin@example.com
+
+Resources:
+  CentralNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: CentralNotifications
+
+  TopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: 
+        - !Ref CentralNotificationTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowAWSServices
+            Effect: Allow
+            Principal: 
+              AWS: '*'
+            Action: 
+              - sns:Publish
+            Resource: !GetAtt CentralNotificationTopic.TopicArn
+            Condition:
+              StringEquals:
+                'aws:SourceAccount': !Ref 'AWS::AccountId'
+                'aws:SourceArn': !Sub 'arn:${AWS::Partition}:*:${AWS::Region}:${AWS::AccountId}:*'
+
+  NotificationEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref CentralNotificationTopic
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
+
+Outputs:
+  TopicArn:
+    Description: ARN of the created SNS topic
+    Value: !GetAtt CentralNotificationTopic.TopicArn
+
+  TopicName:
+    Description: Name of the created SNS topic
+    Value: !GetAtt CentralNotificationTopic.TopicName

@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation template for creating an RDS instance with Provisioned IOPS'
+
+Parameters:
+  DBName:
+    Type: String
+    Description: The database name
+    Default: mydb
+    MinLength: 1
+    MaxLength: 64
+
+  DBUsername:
+    Type: String
+    Description: Username for the database
+    Default: admin
+    MinLength: 1
+    MaxLength: 16
+
+  DBInstanceClass:
+    Type: String
+    Description: The compute and memory capacity of the DB instance
+    Default: db.r5.large
+    AllowedValues:
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: RDS VPC
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  Subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: RDS Subnet 1
+
+  Subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: RDS Subnet 2
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS instance
+      SubnetIds: 
+        - !Ref Subnet1
+        - !Ref Subnet2
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS instance
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 10.0.0.0/16
+
+  DBSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: RDS database auto-generated password
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "${DBUsername}"}'
+        GenerateStringKey: password
+        PasswordLength: 16
+        ExcludePunctuation: true
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Sub ${AWS::StackName}-db
+      Engine: mysql
+      EngineVersion: 8.0.40
+      DBInstanceClass: !Ref DBInstanceClass
+      AllocatedStorage: 100
+      Iops: 3000
+      StorageType: io1
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups: 
+        - !Ref RDSSecurityGroup
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DBSecret, ':SecretString:password}}' ]]
+      DBName: !Ref DBName
+      PubliclyAccessible: false
+      BackupRetentionPeriod: 7
+      MultiAZ: false
+      AutoMinorVersionUpgrade: true
+      Port: 3306
+
+Outputs:
+  DBEndpoint:
+    Description: The connection endpoint for the database
+    Value: !GetAtt RDSInstance.Endpoint.Address
+
+  DBPort:
+    Description: The port number on which the database accepts connections
+    Value: !GetAtt RDSInstance.Endpoint.Port
+
+  SecretARN:
+    Description: Secret ARN for database credentials
+    Value: !Ref DBSecret
+
+  VpcId:
+    Description: VPC ID
+    Value: !Ref VPC
+
+  Subnet1Id:
+    Description: Subnet 1 ID
+    Value: !Ref Subnet1
+
+  Subnet2Id:
+    Description: Subnet 2 ID
+    Value: !Ref Subnet2

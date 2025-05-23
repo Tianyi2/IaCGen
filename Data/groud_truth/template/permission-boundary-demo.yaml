@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+# This CloudFormation template demonstrates a permission boundary.
+# The role "AverageDeveloperRole" will be assumable by users within the account.
+# This role can do anything in IAM, like creating other roles, policies, etc.
+# BUT anything they create will be subject to the permission boundary.
+
+Parameters:
+  UsePermissionBoundaries:
+    Type: String
+    AllowedValues: 
+    - True
+    - False
+    Default: False
+    Description: Do you want the roles to be setup with permission boundaries?  When false, the role we create will be able to exceed their own permissions.
+
+  RequiredOwnerTag:
+    Type: String
+    Default: MyTeam
+    Description: The value for the 'Owner' tag which must be present on all resources we create, modify, or delete.
+
+  RolePrefix:
+    Type: String
+    Default: MyTeam
+    Description: The first few letters of the role names that our principal will be allowed to create, update, and delete.
+
+Conditions:
+  PermissionBoundariesCondition:        !Equals [ !Ref UsePermissionBoundaries, True ] 
+
+Resources:
+
+  # AverageDeveloperRole can be assumed by any user or role in the account:
+  AverageDeveloperRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: AverageDeveloperRole
+      ManagedPolicyArns: 
+        - !Ref AverageDeveloperBasicPolicy
+        - !If [PermissionBoundariesCondition, !Ref AverageDeveloperBoundedPolicy, !Ref AverageDeveloperUnboundedPolicy]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Principal:
+            AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+          Action: sts:AssumeRole
+
+
+  # Basic permissions that someone should always be allowed to do:
+  AverageDeveloperBasicPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties: 
+      ManagedPolicyName: AverageDeveloperBasicPolicy
+      PolicyDocument: 
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Action: 
+            - iam:List*
+            - iam:Get*
+            - s3:*
+            - cloudformation:*
+            - elasticbeanstalk:*
+            - lambda:*
+          Resource: 
+            - "*"
+
+
+  # This controls what the AverageDeveloperRole can do.  
+  # It's too powerful, a developer can exceed their own permissions by using it to create other powerful roles:
+  AverageDeveloperUnboundedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties: 
+      ManagedPolicyName: AverageDeveloperUnboundedPolicy
+      PolicyDocument: 
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Action: 
+            - iam:*
+          Resource: 
+            - "*"
+
+  # This alternative Policy controls what the AverageDeveloperRole can do.
+  # It has boundaries, it allows manipulation of roles only if they have a permission boundary, and only certain prefixes:
+  AverageDeveloperBoundedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties: 
+      ManagedPolicyName: AverageDeveloperBoundedPolicy
+      PolicyDocument: 
+        Version: 2012-10-17
+        # 1. Allowed to create, update, delete roles and policies prefixed and tagged with our team name.
+        # 2. Allowed to tag the role with Owner= team name
+        # 3. Allowed to create, update, delete non-Owner tags on our resources
+        # 4. Deny role maintenence that does not include the permission boundary
+        Statement:  
+          # Allowed to create, modify or delete policies prefixed with your team name.
+          - Sid: AllowPolicyMaintenance
+            Effect: Allow
+            Action: 
+              - iam:CreatePolicy
+              - iam:CreatePolicyVersion
+              - iam:DeletePolicyVersion
+            Resource: 
+              - !Sub arn:aws:iam::${AWS::AccountId}:policy/${RolePrefix}*
+
+          # Allowed to modify or delete roles prefixed and tagged with your team name.
+          - Sid: AllowModifyingOurTeamsRoles
+            Effect: Allow
+            Action: 
+              - iam:DeleteRole
+              - iam:UpdateRole*
+              - iam:AttachRolePolicy
+              - iam:DetachRolePolicy
+            Resource: 
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/${RolePrefix}*
+            Condition:
+              StringEquals: 
+                iam:ResourceTag/Owner: !Ref RequiredOwnerTag
+
+          # Allowed to create roles and tag roles only if request includes owner tag with correct value
+          - Sid: AllowRoleIfTaggedWithOwner
+            Effect: Allow
+            Action: 
+              - iam:CreateRole
+              - iam:TagRole
+            Resource: 
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/${RolePrefix}*
+            Condition:
+              StringEquals: 
+                aws:RequestTag/Owner: !Ref RequiredOwnerTag
+
+          # Allow add / remove of other tags unrelated to Owner
+          - Sid: AllowTagMaintenanceOfNonOwnerTags
+            Effect: Allow
+            Action: 
+              - iam:TagRole
+              - iam:UntagRole
+            Resource:
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/${RolePrefix}*
+            Condition:
+              StringEquals: 
+                iam:ResourceTag/Owner: !Ref RequiredOwnerTag
+              ForAllValues:StringNotEquals: 
+                aws:TagKeys: Owner
+
+          # Our Roles cannot be created or modified without permission boundary:
+          - Sid: DeniedModifyingWithoutPermissionBoundary
+            Effect: Deny
+            Action: 
+              - iam:CreateRole
+              - iam:AttachRolePolicy
+              - iam:DetachRolePolicy
+            Resource: 
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/${RolePrefix}*
+            Condition:
+              StringEquals: 
+                aws:RequestTag/Owner: !Ref RequiredOwnerTag
+              StringNotEquals:
+                iam:PermissionsBoundary: !Ref PermissionBoundaryPolicy
+
+
+  #  This is the policy a central administrator would set to ultimately limit 
+  #  what the Developer created roles / policies could do.
+  PermissionBoundaryPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties: 
+      ManagedPolicyName: PermissionBoundaryPolicy
+      PolicyDocument: 
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Action: 
+            - s3:*
+            - iam:List*
+            - iam:Get*
+          Resource: 
+            - "*"

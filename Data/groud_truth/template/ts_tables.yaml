@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Timestream samples and research 
+
+Resources:
+  TestDatabase:
+    Type: AWS::Timestream::Database
+    Properties:
+      DatabaseName: "timestream-sample-db"
+
+  TestTable01:
+    Type: AWS::Timestream::Table
+    Properties:
+      DatabaseName: !Ref TestDatabase
+      RetentionProperties: 
+        MemoryStoreRetentionPeriodInHours: 24
+        MagneticStoreRetentionPeriodInDays: 360
+      TableName: poc-table-01-batch-write
+
+  TestTable02:
+    Type: AWS::Timestream::Table
+    Properties:
+      DatabaseName: !Ref TestDatabase
+      RetentionProperties: 
+        memoryStoreRetentionPeriodInHours: 12
+        magneticStoreRetentionPeriodInDays: 5
+      TableName: poc-table-02-older-records-memonly
+
+  S3BucketMagneticErrorRecords:
+     Type: AWS::S3::Bucket
+     UpdateReplacePolicy: Delete
+     DeletionPolicy: Delete     
+     Properties:
+      BucketName: !Sub "s3-timestream-sample-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+
+  TestTable03:
+    Type: AWS::Timestream::Table
+    Properties:
+      DatabaseName: !Ref TestDatabase
+      MagneticStoreWriteProperties:
+        EnableMagneticStoreWrites: true
+        MagneticStoreRejectedDataLocation:
+          S3Configuration:
+            BucketName: !Ref S3BucketMagneticErrorRecords
+            EncryptionOption: "SSE_S3"
+            ObjectKeyPrefix: "timestream_magnetic"      
+      RetentionProperties: 
+        MemoryStoreRetentionPeriodInHours: 12
+        MagneticStoreRetentionPeriodInDays: 5
+      TableName: poc-table-03-older-records-magnetic
+
+  TestTable04:
+    Type: AWS::Timestream::Table
+    Properties:
+      DatabaseName: !Ref TestDatabase
+      TableName: poc-table-04-common-attributes

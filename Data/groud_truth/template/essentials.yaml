@@ -1,0 +1,95 @@
+Description: Essential resources common to all AWS accounts
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  # Bucket for lambda artifacts
+  AWSS3LambdaArtifactsBucket:   # a publicly accessible S3 bucket with a policy allowing global read access to objects, enabling easy distribution of Lambda deployment packages or static assets.
+    Type: AWS::S3::Bucket
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks: [ "W3045" ]
+    DeletionPolicy: Delete
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+  AWSIAMS3LambdaArtifactsBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref AWSS3LambdaArtifactsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub '${AWSS3LambdaArtifactsBucket.Arn}/*'
+  # KMS Keys
+  AWSKmsInfraKey:
+    Type: "AWS::KMS::Key"
+    Properties:
+      Description: !Join
+        - '-'
+        - - !Ref AWS::StackName
+          - "InfraKey"
+      EnableKeyRotation: "true"
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: "Allow administration of the key"
+            Effect: "Allow"
+            Principal:
+              AWS:
+                - !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action:
+              - "kms:Create*"
+              - "kms:Describe*"
+              - "kms:Enable*"
+              - "kms:List*"
+              - "kms:Put*"
+              - "kms:Update*"
+              - "kms:Revoke*"
+              - "kms:Disable*"
+              - "kms:Get*"
+              - "kms:Delete*"
+              - "kms:ScheduleKeyDeletion"
+              - "kms:CancelKeyDeletion"
+            Resource: "*"
+          -
+            Sid: "Allow use of the key"
+            Effect: "Allow"
+            Principal:
+              AWS:
+                - !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:DescribeKey"
+            Resource: "*"
+  AWSKmsInfraKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Join
+        - ''
+        - - 'alias/'
+          - !Ref AWS::StackName
+          - '/InfraKey'
+      TargetKeyId: !Ref AWSKmsInfraKey
+Outputs:
+  AWSS3LambdaArtifactsBucket:
+    Value: !Ref AWSS3LambdaArtifactsBucket
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-LambdaArtifactsBucket'
+  AWSKmsInfraKey:
+    Value: !Ref AWSKmsInfraKey
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-InfraKey'
+  AWSKmsInfraKeyAlias:
+    Value: !Ref AWSKmsInfraKeyAlias
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-InfraKeyAlias'

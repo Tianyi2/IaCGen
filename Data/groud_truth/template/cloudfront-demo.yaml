@@ -1,0 +1,183 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+# S3 bucket, set for website, fronted by CloudFront
+# You must copy in your own desired content into the bucket.
+# WARNING:  CloudFront distributions take about 5-10 minutes to create / update.  
+
+Parameters:
+
+  WebsiteSuffix:
+    Description: Suffix to be placed on the website bucket.
+    Type: String
+    Default: demonstration
+
+Resources:
+
+  # Bucket for website:
+  S3:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Sub website-${WebsiteSuffix}
+
+  # Contents of the bucket are publicly gettable:
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref S3
+      PolicyDocument: 
+        Statement: 
+        - Effect: Allow                                                                       #  Allow...
+          Action:                                                                             # ...to perform GetObject on...
+          - s3:GetObject
+          Resource: !Sub arn:aws:s3:::${S3}/*                                                 #  ...any object in this S3 bucket.
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Condition:
+            StringEquals:
+              AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFront}   # This policy is based on Origin Access Control
+
+
+  CloudFront:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig: 
+        Comment: Pointing at S3 Bucket
+        Enabled: true
+        HttpVersion: http2
+        PriceClass: PriceClass_100    # Cheapest
+        DefaultRootObject: index.html
+        Origins:
+        - Id: S3Bucket
+          DomainName: !GetAtt S3.RegionalDomainName   # Must be region specific to avoid redirect behavior when buckets are new
+          OriginAccessControlId: !Ref OAC
+          S3OriginConfig:
+            OriginAccessIdentity: ''   # This is required, but unneeded when using OAC.  Must supply an empty string.
+        DefaultCacheBehavior:
+          TargetOriginId: S3Bucket
+          CachePolicyId: !Ref SampleCachePolicy
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https   # allow-all, redirect-to-https, https-only        
+
+  SampleCachePolicy:    # Just an example of a cache policy
+    Type: AWS::CloudFront::CachePolicy
+    Properties: 
+      CachePolicyConfig: 
+        Name: SixySeconds
+        Comment: An example cache policy which caches for 60 seconds, unless the origin says different.
+        DefaultTTL: 60  # Time object will remain in cache, unless origin says different.
+        MaxTTL: 600     # Maximum time object will remain in cache regardless of what the origin says.
+        MinTTL: 0       # Minimum time object will stay in cache regardless of what the origin says.
+        ParametersInCacheKeyAndForwardedToOrigin: 
+          CookiesConfig: 
+             CookieBehavior: none
+          EnableAcceptEncodingGzip: true
+          HeadersConfig: 
+            HeaderBehavior: none
+          QueryStringsConfig: 
+            QueryStringBehavior: none
+
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties: 
+      OriginAccessControlConfig: 
+          Description: An optional description for the origin access control
+          Name: ExampleOAC
+          OriginAccessControlOriginType: s3
+          SigningBehavior: always
+          SigningProtocol: sigv4
+          
+ 
+  # S3 Custom resource to place an index.html file on the bucket, then clean it off when deleting the stack
+  CustomResourceLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub CustomResource-${AWS::StackName}
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.11
+      Timeout: 15
+      Code:
+        ZipFile: |
+          import boto3, json
+          import cfnresponse
+          
+          def handler(event, context):
+            # print(event)
+            requestType = event["RequestType"]
+            rp          = event['ResourceProperties']
+            s3Bucket   = rp['s3Bucket']
+
+            responseData = {}
+            msg = ""
+            try:
+              if requestType == 'Create' or  requestType == 'Update':
+                boto3.client('s3').put_object(Bucket=s3Bucket,Body='Hello World',Key='index.html',ContentType='text/html')
+
+              if requestType == 'Delete':
+                print ('Cleaning out S3 buckets to enable delete... ' )
+                boto3.resource('s3').Bucket(s3Bucket).objects.all().delete()
+                msg = "Bucket cleanup complete"
+
+            except Exception as e:
+              msg = f"Exception raised for function: Exception details: {e}"
+              print(msg)
+              responseData['Reason'] = msg
+              cfnresponse.send(event, context, cfnresponse.FAILED, responseData, event["LogicalResourceId"]);
+              
+            # Unless something blew up, we should wander into this code:
+            print(msg)
+            responseData['Reason'] = msg
+            cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData, event["LogicalResourceId"]);
+              
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-LambdaRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: !Sub lambdaLogsCreatePolicy-${AWS::StackName}
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - s3:List*
+            - s3:Put*
+            - s3:Delete*
+            Resource: 
+            - '*'
+                
+  # Custom bucket maintenance function.
+  invokeLambda:
+    Type: Custom::BucketMaintenance
+    Version: "1.0"
+    Properties:
+      ServiceToken: !GetAtt CustomResourceLambda.Arn
+      s3Bucket: !Ref S3
+
+Outputs:
+  TheURL:
+    Description:  WARNING - There may be a delay until this URL is available
+    Value: !Sub https://${CloudFront.DomainName}
+
+  S3DomainName:
+    Value:  !GetAtt S3.DomainName  
+
+  CloudFrontConsole:
+    Description:  AWS Management Console, CloudFront page for this distribution
+    Value: !Sub https://us-east-1.console.aws.amazon.com/cloudfront/v3/home?region=${AWS::Region}#/distributions/${CloudFront.Id}

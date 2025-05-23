@@ -1,0 +1,89 @@
+Description: Resources for the EC2 Image Builder
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  OwnerEmail:
+    Description: 'Email address of the owner of this resource'
+    Type: String
+    AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
+    ConstraintDescription: 'Must be an acceptable email address syntax(i.e. joe.smith@sagebase.org)'
+    Default: 'it@sagebase.org'
+Resources:
+  ImageBuilderInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: '/'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - 'ec2.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
+        - 'arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilder'
+        - !Ref ImageBuilderLogsManagedolicy
+  ImageBuilderProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref ImageBuilderInstanceRole
+  # Bucket for EC2 image builder logs
+  ImageBuilderLogsBucket:
+    Type: AWS::S3::Bucket
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks: [ "W3045" ]
+    DeletionPolicy: Delete
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      Tags:
+        - Key: "OwnerEmail"
+          Value: !Ref OwnerEmail
+  ImageBuilderLogsManagedolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetBucketLocation
+              - s3:ListAllMyBuckets
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+            Resource:
+              - !Sub "arn:aws:s3:::${ImageBuilderLogsBucket}"
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+              - s3:DeleteObject
+            Resource:
+              - !Sub "arn:aws:s3:::${ImageBuilderLogsBucket}/*"
+Outputs:
+  ImageBuilderProfile:
+    Description: Profile to allow the image builder to provision instances
+    Value: !Ref ImageBuilderProfile
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-ImageBuilderProfile'
+  ImageBuilderInstanceRole:
+    Description: Role to allow instances tag and receive management via Systems Manager
+    Value: !Ref ImageBuilderInstanceRole
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-ImageBuilderInstanceRole'
+  ImageBuilderLogsBucket:
+    Description: Bucket containing EC2 Image builder logs
+    Value: !Ref ImageBuilderLogsBucket
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-ImageBuilderLogsBucket'

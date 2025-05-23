@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "lab 2.2.4"
+
+Resources:
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "stelligent-u-224-jason.davis.labs"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+              KMSMasterKeyID: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:${LabKey}'
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+              Rules:
+                - Id: LabLifecycle
+                  AbortIncompleteMultipartUpload:
+                    DaysAfterInitiation: 3
+                  NoncurrentVersionExpirationInDays: 14
+                  Status: Enabled
+                  Transitions:
+                    - StorageClass: STANDARD_IA
+                      TransitionInDays: 30
+      Tags:
+        - Key: runner
+          Value: "runner"
+
+  LabKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "key for lab use 2.4.3"
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: key-default-1
+        Statement:
+        - Sid: Enable IAM User Permissions
+          Effect: Allow
+          Principal:
+            AWS: !Join
+              - ''
+              - - 'arn:aws:iam::'
+                - !Ref 'AWS::AccountId'
+                - ':root'
+          Action: 'kms:*'
+          Resource: '*'
+
+  s3KeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/s3-jmd-lab
+      TargetKeyId:
+        Ref: LabKey

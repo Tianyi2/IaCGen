@@ -1,0 +1,167 @@
+---
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# cfn-modules:implements(ExposeArn)
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'cfn-modules: MSK Cluster'
+Parameters:
+  VpcModule:
+    Description: 'Stack name of vpc module.'
+    Type: String
+  ClientSgModule:
+    Description: 'Stack name of client-sg module.'
+    Type: String
+  KmsKeyModule:
+    Description: 'Optional but recommended stack name of kms-key module.'
+    Type: String
+    Default: ''
+  BastionModule:
+    Description: 'Optional but recommended stack name of module implementing Bastion.'
+    Type: String
+    Default: ''
+  AlertingModule:
+    Description: 'Optional but recommended stack name of alerting module.'
+    Type: String
+    Default: ''
+  NumberOfBrokerNodes:
+    Description: 'The number of broker nodes you want in the Amazon MSK cluster. You can submit an update to increase the number of broker nodes in a cluster. Has to be a multiple of the private subnets in your VPC.'
+    Type: Number
+  KafkaVersion:
+    Description: 'The version of Apache Kafka.'
+    Type: String
+    Default: '3.7.x'
+  InstanceType:
+    Description: 'The type of Amazon EC2 instances to use for brokers.'
+    Type: String
+    Default: 'kafka.t3.small'
+  MSKConfigurationArn:
+    Description: 'Optional Amazon Resource Name (ARN) of the MSK configuration to use.'
+    Type: String
+    Default: ''
+  MSKConfigurationNumber:
+    Type: Number
+    Description: 'Optional revision of the Amazon MSK configuration to use (required if MSKConfigurationArn is set).'
+    Default: 0
+  EBSVolumeSize:
+    Type: Number
+    Description: 'The size in GiB of the EBS volume for the data drive on each broker node.'
+    Default: 1
+  ClientBrokerEncryption:
+    Description: 'Indicates the encryption setting for data in transit between clients and brokers'
+    Type: String
+    Default: 'TLS'
+    AllowedValues: ['TLS', 'PLAINTEXT', 'TLS_PLAINTEXT']
+  LogsRetentionInDays:
+    Description: 'Specifies the number of days you want to retain log events in the specified log group.'
+    Type: Number
+    Default: 14
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
+Conditions:
+  HasKmsKeyModule: !Not [!Equals [!Ref KmsKeyModule, '']]
+  HasBastionModule: !Not [!Equals [!Ref BastionModule, '']]
+  HasAlertingModule: !Not [!Equals [!Ref AlertingModule, '']]
+  HasMSKConfiguration: !Not [!Equals [!Ref MSKConfigurationArn, '']]
+Resources:
+  LogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Join ['', ['/aws/vendedlogs/cfn-modules-msk-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]]
+      RetentionInDays: !Ref LogsRetentionInDays
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Ref 'AWS::StackName'
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 9092
+        ToPort: 9092
+        SourceSecurityGroupId: {'Fn::ImportValue': !Sub '${ClientSgModule}-SecurityGroupId'}
+      - IpProtocol: tcp
+        FromPort: 9094
+        ToPort: 9094
+        SourceSecurityGroupId: {'Fn::ImportValue': !Sub '${ClientSgModule}-SecurityGroupId'}
+      - IpProtocol: tcp
+        FromPort: 2181
+        ToPort: 2181
+        SourceSecurityGroupId: {'Fn::ImportValue': !Sub '${ClientSgModule}-SecurityGroupId'}
+      VpcId: {'Fn::ImportValue': !Sub '${VpcModule}-Id'}
+  SecurityGroupInKafkaFromBastion:
+    Condition: HasBastionModule
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref SecurityGroup
+      IpProtocol: tcp
+      FromPort: 9092
+      ToPort: 9092
+      SourceSecurityGroupId: {'Fn::ImportValue': !Sub '${BastionModule}-SecurityGroupId'}
+  AlarmOfflinePartitionsCount:
+    Condition: HasAlertingModule
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmActions:
+      - {'Fn::ImportValue': !Sub '${AlertingModule}-Arn'}
+      AlarmDescription: 'Offline partition count greater than 0 '
+      ComparisonOperator: LessThanThreshold
+      Dimensions:
+      - Name: ClusterName
+        Value: !Ref Cluster
+      EvaluationPeriods: 1
+      MetricName: OfflinePartitionsCount
+      Namespace: 'AWS/MSK'
+      OKActions:
+      - {'Fn::ImportValue': !Sub '${AlertingModule}-Arn'}
+      Period: 300
+      Statistic: Maximum
+      Threshold: 1
+  Cluster:
+    Type: 'AWS::MSK::Cluster'
+    Properties:
+      BrokerNodeGroupInfo:
+        ClientSubnets: !Split [',', {'Fn::ImportValue': !Sub '${VpcModule}-SubnetIdsPrivate'}]
+        InstanceType: !Ref InstanceType
+        SecurityGroups:
+        - !Ref SecurityGroup
+        StorageInfo:
+          EBSStorageInfo:
+            VolumeSize: !Ref EBSVolumeSize
+      ClusterName: !Sub '${AWS::StackName}'
+      ConfigurationInfo: !If
+      - HasMSKConfiguration
+      - Arn: !Ref MSKConfigurationArn
+        Revision: !Ref MSKConfigurationNumber
+      - !Ref 'AWS::NoValue'
+      EncryptionInfo:
+        EncryptionAtRest: !If
+        - HasKmsKeyModule
+        - DataVolumeKMSKeyId: {'Fn::ImportValue': !Sub '${KmsKeyModule}-Arn'}
+        - !Ref 'AWS::NoValue'
+        EncryptionInTransit:
+          ClientBroker: !Ref ClientBrokerEncryption
+          InCluster: true
+      KafkaVersion: !Ref KafkaVersion
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: true
+            LogGroup: !Ref LogGroup
+      NumberOfBrokerNodes: !Ref NumberOfBrokerNodes
+Outputs:
+  ModuleId:
+    Value: 'msk-cluster'
+  ModuleVersion:
+    Value: '1.0.1'
+  StackName:
+    Value: !Ref 'AWS::StackName'
+  Arn:
+    Value: !Ref Cluster
+    Export:
+      Name: !Sub '${AWS::StackName}-Arn'

@@ -1,0 +1,341 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+# See https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/browser-invoke-lambda-function-example.html
+# Run this CloudFormation tempate in Oregon.  Other regions will require some code adjustment.
+# Access the web application via the Website URL output of your stack.
+
+Parameters:
+
+  S3BucketName:
+    Description:  The name of the S3 bucket for you website.  Must be globally unique.  
+    Type:  String
+    Default:  testanuyyy1
+
+Resources:
+  # Main bucket.  
+  MainS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Sub ${S3BucketName}
+      WebsiteConfiguration:
+        IndexDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicPolicy: false
+
+
+  # This policy allows anyone in the world to make GET requests against the bucket.
+  MainS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref MainS3Bucket
+      PolicyDocument: 
+        Statement:
+          Effect: Allow
+          Action: s3:GetObject
+          Resource: !Sub ${MainS3Bucket.Arn}/*
+          Principal: "*"
+
+  CognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: !Sub ${AWS::StackName}_SlotMachine_Pool
+      AllowUnauthenticatedIdentities: true
+
+  # This Role allows the main Lambda function to be invoked:
+  # It only needs permissions to write to its own log files
+  RoleSlotMachineLambda:
+    Type: AWS::IAM::Role
+    DependsOn: CustomResourceWebContentLambda   # Roles are created early and deleted late.  This forces the log group to be deleted late.
+    Properties: 
+      RoleName: !Sub ${AWS::StackName}-SlotMachine-LambdaRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  # This role allows a Cognito Identity Pool - authenticated principal to call our main Lambda.
+  # It needs permission to invoke our lambda.
+  UnauthenticatedPrincipalRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: !Sub ${AWS::StackName}-SlotMachine-UnauthenticatedPrincipal
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Principal:
+            Federated: cognito-identity.amazonaws.com
+          Action: sts:AssumeRoleWithWebIdentity
+          # AWS requires that roles associated with unauthenticated principals in Cognito identity pools 
+          # have a condition element defined.  
+          Condition:
+            StringEquals:
+              cognito-identity.amazonaws.com:aud: !Ref CognitoIdentityPool
+            ForAnyValue:StringLike:
+              cognito-identity.amazonaws.com:amr: unauthenticated
+
+  AllowInvokeFunction:
+    Type: AWS::IAM::Policy
+    Properties: 
+      PolicyName: !Sub ${AWS::StackName}-AllowCognitoUnauthInvokeLambda
+      PolicyDocument: 
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Action: 
+            - lambda:InvokeFunction
+          Resource: !GetAtt SlotMachineLambda.Arn
+      Roles: 
+        - !Ref UnauthenticatedPrincipalRole
+
+  # Attach the role to the identity pool:
+  IdentityPoolRoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref CognitoIdentityPool
+      Roles: 
+        unauthenticated:
+          !GetAtt UnauthenticatedPrincipalRole.Arn
+      
+
+  # NodeJS function is fired by JS on web page whenever someone pulls the slot machine handle:
+  SlotMachineLambda:
+    Type: AWS::Lambda::Function
+    Properties: 
+      FunctionName: slotpull  # Name must be fixed since front-end code will refer to it.
+      Description: Slot Machine function, fired by website..
+      MemorySize: 128
+      Timeout: 4
+      Role: !GetAtt RoleSlotMachineLambda.Arn
+      Runtime: nodejs20.x
+      Handler: index.handler
+      Code:
+        ZipFile: !Sub |
+          /*
+            Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+            This file is licensed under the Apache License, Version 2.0 (the "License").
+            You may not use this file except in compliance with the License. A copy of
+            the License is located at
+              http://aws.amazon.com/apache2.0/
+            This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+            CONDITIONS OF ANY KIND, either express or implied. See the License for the
+            specific language governing permissions and limitations under the License.
+          */
+          'use strict';
+
+          var faceCards = [
+            'spad_a.png',  'spad_k.png',  'spad_q.png',  'spad_j.png',
+            'hart_a.png',  'hart_k.png',  'hart_q.png',  'hart_j.png',
+            'diam_a.png',  'diam_k.png',  'diam_q.png',  'diam_j.png',
+            'club_a.png',  'club_k.png',  'club_q.png',  'club_j.png'
+          ];
+
+          exports.handler = (event, context, callback) => {
+            // Define the object that will hold the data values returned
+            var slotResults = {
+              'isWinner' : false,
+              'leftWheelImage' : {'file' : {S: ''}},
+              'middleWheelImage' : {'file' : {S: ''}},
+              'rightWheelImage' : {'file' : {S: ''}}
+            };
+
+            // Improve odds with 3 pulls:
+            var step;
+            for (let step = 1; step < 3; step++) {
+
+              // set a random number 0-15 for each slot position
+              var slot1 = Math.floor(Math.random()*16);
+              var slot2 = Math.floor(Math.random()*16);
+              var slot3 = Math.floor(Math.random()*16);
+
+              slotResults.leftWheelImage.file.S = faceCards[slot1];
+              slotResults.middleWheelImage.file.S = faceCards[slot2];
+              slotResults.rightWheelImage.file.S = faceCards[slot3];
+
+              // if all three values are identical, the spin is a winner!
+              if ((slot1 === slot2) && (slot2 === slot3)) {
+                  console.log('Winner!');
+                  slotResults.isWinner = true;
+                  break;
+              }
+            }
+            // return the JSON result to the caller of the Lambda function
+            callback(null, slotResults);
+          };
+
+
+  # This function will setup the web content in our S3 web bucket
+  CustomResourceWebContentLambda:
+    Type: AWS::Lambda::Function
+    DependsOn: CloudwatchLogsGroupCustomResource
+    Properties: 
+      FunctionName: !Sub ${AWS::StackName}-WebContentCustomResource
+      Description: Populates S3 bucket with web content for our slot machine.
+      Role: !GetAtt CustomResourceRole.Arn
+      MemorySize: 128     
+      Timeout: 15         # Uploads and downloads take a bit of time.
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Code:
+        ZipFile: !Sub |
+          from zipfile import ZipFile 
+          import json
+          import os
+          import cfnresponse
+          import mimetypes
+          import boto3
+          import urllib.request
+
+          print('Loading function')
+
+          # Entry point:
+          def lambda_handler(event, context):
+              print("Received event: " + json.dumps(event, indent=2))
+
+              # Get the CloudFormation request type
+              requestType = event['RequestType']
+              rp          = event['ResourceProperties']
+              region        = rp['region']
+              downloadUrl     = rp['downloadUrl']
+              identityPoolId    = rp['identityPoolId']
+              destinationBucket   = rp['destinationBucket']
+
+              unzip_location  = "/tmp/web"
+              responseData = {}
+              s3 = boto3.client('s3')
+
+              if requestType == 'Create' or requestType == 'Update':
+                try:
+                    print ('Downloading... ' )
+                    zip_file_name, headers = urllib.request.urlretrieve(downloadUrl)          
+
+                    print ('Unzipping...' )
+                    try:
+                        with ZipFile(zip_file_name, 'r') as zip: 
+                            zip.extractall(unzip_location) 
+                    except Exception as e:
+                        msg = 'Error extracting {} to {}.  Exception is {}.'.format(zip_file_name,unzip_location,e)
+                        print(msg)
+                        responseData['Reason'] = msg
+                        cfnresponse.send(event, context, cfnresponse.FAILED, responseData)
+                        return
+
+                    html_file_name = "/tmp/web/index.html"
+                    print('Altering contents of {}...'.format(html_file_name))
+                    data = ""
+                    # Read the file contents into memory:
+                    with open(html_file_name,'r') as f:
+                        data = f.read()
+
+                    # Search and replace:
+                    data = data.replace("IDENTITY_POOL_ID",identityPoolId)
+                    data = data.replace("us-west-2",region)
+
+                    # Save
+                    with open(html_file_name,'w') as f:
+                        f.write(data)
+
+                    print ('Uploading {} to {}'.format(unzip_location,destinationBucket))
+                    for root,dirs,files in os.walk(unzip_location):
+                        for file in files:
+                            mime_type = mimetypes.guess_type(file)[0]
+                            if mime_type is None:
+                                mime_type = "binary/octet-stream"
+                            prefix = root.replace(unzip_location,"",1)
+                            if len(prefix) > 0:
+                                prefix = prefix + '/'
+                            print("uploading from {} to {}".format(os.path.join(root,file),prefix+file))
+                            s3.upload_file(os.path.join(root,file),destinationBucket,prefix + file,ExtraArgs={'ContentType': mime_type})
+                    print ('Upload complete.')
+
+                except Exception as e:
+                    msg = 'Error occurred while setting up web content.  Exception is {}.'.format(repr(e))
+                    print(msg)
+                    responseData['Reason'] = msg
+                    cfnresponse.send(event, context, cfnresponse.FAILED, responseData)
+                    return
+
+              if requestType == 'Delete':
+                print ('Clean out bucket to enable delete... ' )
+                boto3.resource('s3').Bucket(destinationBucket).objects.all().delete()
+
+              # Unless something blew up, we should wander into this code:
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
+
+              
+  # This Role gives permission to our custom resource Lambda.
+  CustomResourceRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: !Sub ${AWS::StackName}-CustomResourceRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+
+
+  # This Policy is attached to the CustomResourceRole.
+  # Basic permissions for CloudWatch Logs, plus S3.
+  CustomResourcePolicy:
+    Type: AWS::IAM::Policy
+    Properties: 
+      PolicyName: !Sub ${AWS::StackName}-CustomResourcePolicy
+      PolicyDocument: 
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Action: 
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - s3:Put*
+            - s3:List*
+            - s3:Delete*
+          Resource: "*"
+      Roles: 
+        -  !Ref CustomResourceRole   
+
+  # This custom resource calls our Lambda function:
+  HelperCustomResourceWebContentLambda:
+    Type: Custom::helper
+    DependsOn: CustomResourcePolicy     # Dont try running the custom resource until the policy is set.
+    Properties:
+      ServiceToken: !GetAtt CustomResourceWebContentLambda.Arn
+      region: !Sub ${AWS::Region}
+      identityPoolId: !Ref CognitoIdentityPool
+      destinationBucket: !Ref MainS3Bucket
+      downloadUrl: "https://kk-courses.s3.amazonaws.com/aws-arch/slot-machine-website-demo/slotassets.zip"
+
+  # CloudWatch Logs Groups are created automatically once Lambdas write output,
+  # but they are easier to cleanup when they are part of the stack.  
+  # So make one for each Lambda function:
+  CloudwatchLogsGroupSlotMachine:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${SlotMachineLambda}
+      RetentionInDays: 3
+
+  CloudwatchLogsGroupCustomResource:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-WebContentCustomResource
+      RetentionInDays: 3
+
+
+Outputs:
+
+  IdentityPoolId:
+    Description: Cognito Identity Pool ID
+    Value: !Ref CognitoIdentityPool
+
+  WebsiteUrl:
+    Description:  URL of the website
+    Value: !GetAtt MainS3Bucket.WebsiteURL

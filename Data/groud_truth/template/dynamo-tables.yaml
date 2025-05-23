@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Supporter product data tables - stack name should be supporter-product-data-tables-${Stage}
+Parameters:
+  Stage:
+    Description: Environment name
+    Type: String
+    AllowedValues:
+      - PROD
+      - CODE
+    Default: CODE
+
+Conditions:
+  CreateProdResources: !Equals [!Ref "Stage", "PROD"]
+  CreateCodeResources: !Not [ !Equals [ !Ref "Stage", "PROD"]]
+
+Resources:
+  ProdTable:
+    Condition: CreateProdResources
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "identityId"
+          AttributeType: "S"
+        - AttributeName: "subscriptionName"
+          AttributeType: "S"
+      KeySchema:
+        # https://www.dynamodbguide.com/key-concepts/#primary-key
+        # partition key
+        - AttributeName: "identityId"
+          KeyType: "HASH"
+        # sort key
+        - AttributeName: "subscriptionName"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 20
+        WriteCapacityUnits: 5
+      SSESpecification:
+        SSEEnabled: true
+      TableName: !Sub SupporterProductData-${Stage}
+      TimeToLiveSpecification:
+        AttributeName: "expiryDate"
+        Enabled: true
+      Tags:
+        - Key: devx-backup-enabled
+          Value: true
+
+  WriteCapacityScalableTarget:
+    Condition: CreateProdResources
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: 500
+      MinCapacity: 5
+      ResourceId:
+        Fn::Join:
+          - "/"
+          - - table
+            - Ref: ProdTable
+      RoleARN:
+        Fn::GetAtt:
+          - ScalingRole
+          - Arn
+      ScalableDimension: dynamodb:table:WriteCapacityUnits
+      ServiceNamespace: dynamodb
+  ScalingRole:
+    Condition: CreateProdResources
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - application-autoscaling.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeTable
+                  - dynamodb:UpdateTable
+                  - cloudwatch:PutMetricAlarm
+                  - cloudwatch:DescribeAlarms
+                  - cloudwatch:GetMetricStatistics
+                  - cloudwatch:SetAlarmState
+                  - cloudwatch:DeleteAlarms
+                Resource: "*"
+  WriteScalingPolicy:
+    Condition: CreateProdResources
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: WriteAutoScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId:
+        Ref: WriteCapacityScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 50
+        ScaleInCooldown: 30
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBWriteCapacityUtilization
+
+  CodeTable:
+    Condition: CreateCodeResources
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "identityId"
+          AttributeType: "S"
+        - AttributeName: "subscriptionName"
+          AttributeType: "S"
+      KeySchema:
+        # https://www.dynamodbguide.com/key-concepts/#primary-key
+        # partition key
+        - AttributeName: "identityId"
+          KeyType: "HASH"
+        # sort key
+        - AttributeName: "subscriptionName"
+          KeyType: "RANGE"
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      TableName: !Sub SupporterProductData-${Stage}
+      TimeToLiveSpecification:
+        AttributeName: "expiryDate"
+        Enabled: true
+      Tags:
+        - Key: devx-backup-enabled
+          Value: true
+Outputs:
+  ProvisionedTableOutput:
+    Condition: CreateProdResources
+    Description: This Dynamo table is used to store rate plan information about supporters
+    Value: !GetAtt [ ProdTable, "Arn" ]
+    Export:
+      Name: !Sub ${AWS::StackName}-SupporterProductDataTable
+  OnDemandTableOutput:
+    Condition: CreateCodeResources
+    Description: This Dynamo table is used to store rate plan information about supporters
+    Value: !GetAtt [ CodeTable, "Arn" ]
+    Export:
+      Name: !Sub ${AWS::StackName}-SupporterProductDataTable

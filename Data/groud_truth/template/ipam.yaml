@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'IP Address Manager'
+Resources:
+  Ipam:
+    Type: AWS::EC2::IPAM
+    Properties:
+      Description: SageOrganization
+Outputs:
+  IpamArn:
+    Description: 'IPAM ARN'
+    Value: !GetAtt Ipam.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-IpamArn'
+  IpamId:
+    Description: 'IPAM ID'
+    Value: !GetAtt Ipam.IpamId
+    Export:
+      Name: !Sub '${AWS::StackName}-IpamId'
+  IpamPrivateDefaultScopedId:
+    Description: 'IPAM private default scoped ID'
+    Value: !GetAtt Ipam.PrivateDefaultScopeId
+    Export:
+      Name: !Sub '${AWS::StackName}-IpamPrivateDefaultScopeId'
+  IpamPublicDefaultScopedId:
+    Description: 'IPAM public default scoped ID'
+    Value: !GetAtt Ipam.PublicDefaultScopeId
+    Export:
+      Name: !Sub '${AWS::StackName}-IpamPublicDefaultScopeId'

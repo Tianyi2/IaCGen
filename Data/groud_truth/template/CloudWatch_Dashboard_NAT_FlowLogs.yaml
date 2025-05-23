@@ -1,0 +1,77 @@
+
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudWatch Dashboard with VPC Flow Logs Insights Widgets for NAT Gateway'
+
+Parameters:
+  LogGroupName:
+    Type: String
+    Description: 'VPC Flow Logs Log Group Name'
+    Default: '/aws/vpc/flowlogs'
+  DashboardName:
+    Type: String
+    Description: 'Name for the CloudWatch Dashboard'
+    Default: 'NATGatewayFlowLogs'
+
+Resources:
+  NATGatewayDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Ref DashboardName
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "log",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "query": "SOURCE '${LogGroupName}' | filter interfaceId like 'eni-' and action='ACCEPT' and dstAddr not like '10.%' | stats sum(bytes) as bytes by srcAddr | sort bytes desc | limit 10",
+                "region": "${AWS::Region}",
+                "title": "Top 10 Source IPs Using NAT Gateway",
+                "view": "table"
+              }
+            },
+            {
+              "type": "log",
+              "x": 12,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "query": "SOURCE '${LogGroupName}' | filter interfaceId like 'eni-' and action='REJECT' | stats count(*) as rejected_connections by srcAddr, dstAddr | sort rejected_connections desc | limit 10",
+                "region": "${AWS::Region}",
+                "title": "Rejected Traffic Through NAT Gateway",
+                "view": "table"
+              }
+            },
+            {
+              "type": "log",
+              "x": 0,
+              "y": 6,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "query": "SOURCE '${LogGroupName}' | filter interfaceId like 'eni-' and action='ACCEPT' | stats sum(bytes) as total_bytes by bin(1h)",
+                "region": "${AWS::Region}",
+                "title": "Bytes Transferred Through NAT Gateway (Hourly)",
+                "view": "line"
+              }
+            },
+            {
+              "type": "log",
+              "x": 12,
+              "y": 6,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "query": "SOURCE '${LogGroupName}' | filter interfaceId like 'eni-' | stats count(*) as connection_count by bin(1h)",
+                "region": "${AWS::Region}",
+                "title": "Connection Count Through NAT Gateway (Hourly)",
+                "view": "line"
+              }
+            }
+          ]
+        }
