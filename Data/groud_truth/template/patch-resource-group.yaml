@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: An AWS resource group to identify instances for patching
+Resources:
+  TagBasedGroup:
+    Type: "AWS::ResourceGroups::Group"
+    Properties:
+      Name: "PatchResourceGroup"
+      Description: "A group that is based on a tag query for OS patching"
+      ResourceQuery:
+        Type:
+          "TAG_FILTERS_1_0"
+        Query:
+          ResourceTypeFilters:
+            - "AWS::DMS::ReplicationInstance"
+            - "AWS::EC2::Instance"
+            - "AWS::EC2::ReservedInstance"
+            - "AWS::ECS::ContainerInstance"
+            - "AWS::OpsWorks::Instance"
+            - "AWS::RDS::DBInstance"
+            - "AWS::RDS::ReservedDBInstance"
+            - "AWS::SSM::ManagedInstance"
+            - "AWS::SageMaker::NotebookInstance"
+          TagFilters:
+            - Key: "ManagedInstanceMaintenanceTarget"
+              Values:
+                - "yes"
+            - Key: "PatchGroup"
+              Values:
+                - "prod-default"
+Outputs:
+  TagBasedGroupName:
+    Description: 'Resource group name'
+    Value: !Ref TagBasedGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-TagBasedGroupName'
+  TagBasedGroupArn:
+    Description: 'Resource group ARN'
+    Value: !GetAtt TagBasedGroup.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-TagBasedGroupArn'

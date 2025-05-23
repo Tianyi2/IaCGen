@@ -1,0 +1,288 @@
+
+# Re-creates a simpler version of lab 3 from Advanced Developer, without CDK or Cloud9.
+# Upload photos into the resulting S3 bucket and it will tell you if it contains a human or not.
+# There is an interesting circular-relationship between the bucket and the lambda it fires:
+#   1. To fire the lambda, the bucket must have an event notification defined on it.
+#   2. For the event notification to be valid, the bucket must have permission to call the lambda.
+#   2. The permission must refer to the bucket, but the bucket doesn't exist yet.
+# Failing to resolve this gets "Unable to validate the following destination configurations" error on the S3 bucket create. 
+
+Parameters:
+  NotificationPhoneNumber:
+    Description:  Cell Phone / SMS Number to be contacted at.  
+    Type:  String
+    Default:  "+14070000000"
+
+
+Resources:
+  # This role is shared (!) by the rekognition function and human notification function:
+  rekRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-rekRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+
+  rekognitionPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${AWS::StackName}-rekPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - rekognition:Get*
+              - rekognition:List*
+              - rekognition:Describe*
+              - rekognition:Detect*
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - sns:Get*
+              - sns:List*
+              - sns:Publish
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - s3:Get*
+              - s3:List*
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource: "*"
+      Roles: [!Ref rekRole]
+
+  onS3UploadCallStepFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-onS3UploadCallStepFunctionRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns: 
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole" 
+
+  onS3UploadCallStepFunctionPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${AWS::StackName}-onS3UploadCallStepFunctionPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: states:StartExecution
+            Resource: !Ref StateMachine
+      Roles: [ !Ref onS3UploadCallStepFunctionRole ]
+
+  # This role controls what the state machine can do:
+  StateMachineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-stateMachineRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: !Sub states.${AWS::Region}.amazonaws.com
+
+  # The state machine can call these two Lambda functions:
+  StateMachinePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${AWS::StackName}-StateMachinePolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: lambda:InvokeFunction
+            Resource: !GetAtt rekFunction.Arn
+          - Effect: Allow
+            Action: lambda:InvokeFunction
+            Resource: !GetAtt notificationFunction.Arn
+      PolicyName: StateMachinePolicy
+      Roles: [ !Ref StateMachineRole ]
+
+  #  Bucket into which one can upload images.  If images contain a human, you will be notified.
+  UploadBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: UploadBucketPermission  # Can't add event successfully unless permissions are first setup.
+    Properties:
+      NotificationConfiguration:
+        LambdaConfigurations: 
+        - Event: "s3:ObjectCreated:*"
+          Function: !GetAtt onS3UploadCallStepFunction.Arn    
+
+  # This permission allows a function to be executed by the S3 service's upload bucket:
+  UploadBucketPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref onS3UploadCallStepFunction
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref "AWS::AccountId"
+      # Notice how this source ARN is defined loosely.  
+      # If we point to the UploadBucket.Arn, but bucket will be build first, 
+      # but it can't because it's notification will be invalid, error is: 
+      # "Unable to validate the following destination configurations"
+    #  SourceArn: !GetAtt UploadBucket.Arn
+      SourceArn: !Sub "arn:aws:s3:::*"  # Intentially loose to get around the circular reference problem.
+      
+
+  # This function fires whenever an object is uploaded to the S3 upload bucket.  It launches StepFunctions.          
+  onS3UploadCallStepFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: !Sub |
+          # Lambda function to execute Step Function based on s3 event 
+          import boto3
+          import json
+          import os
+
+          def handler(event, context):
+              print('Initiating image rekognition')
+              for record in event['Records']:
+                  bucket = record['s3']['bucket']['name']
+                  key = record['s3']['object']['key']
+
+              print('Detected the following image in S3')
+              print('Bucket: ' + bucket + ' key name: ' + key)
+              ourObject = {
+                  "ourBucket": bucket,
+                  "ourKey": key
+                  }
+              # Replace Step Function ARN
+              stepARN = os.environ['STEP_ARN']
+              client = boto3.client('stepfunctions')
+              response = client.start_execution(
+                  stateMachineArn=stepARN,
+                  input = json.dumps(ourObject)
+              )
+              return
+      Handler: index.handler
+      Role: !GetAtt onS3UploadCallStepFunctionRole.Arn
+      Runtime: python3.11
+      Environment:
+        Variables:
+          STEP_ARN: !Ref StateMachine
+
+  # This Lambda is called by step functions to do image recognition.  It looks for humans in the picture.
+  rekFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: !Sub |
+          from __future__ import print_function
+          import boto3
+          def handler(event, context):
+              print('Initiating image rekognition')
+              bucket = event['ourBucket']
+              key = event['ourKey']
+              client = boto3.client('rekognition')
+              response = client.detect_labels(Image={'S3Object': {'Bucket':bucket, 'Name':key}},
+                  MaxLabels=10,
+                  MinConfidence=75)
+              print('Detected the following labels for ' + key)
+              for label in response['Labels']:
+                  labelName = label['Name']
+                  print(labelName + ' : ' + str(label['Confidence']))
+                  if labelName == "Human" or labelName == "Person":
+                      found = 'human'
+                      break
+                  else:
+                      found = 'other'
+              discovery = {
+                  "found": found,
+                  }
+              return discovery
+
+      Handler: index.handler
+      Role: !GetAtt rekRole.Arn
+      Runtime: python3.11
+
+  # This Lambda is called by step functions when a human is found.  
+  # It sends an SNS notification - you can't do this directly from Step Functions.
+  notificationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: !Sub |
+          from __future__ import print_function
+          import boto3
+          import os
+          def handler(event, context):
+              phoneNumber = os.environ['PHONE_NUMBER']
+              smsMessage = "We found a human!"
+              print('Initiating image rekognition')
+              found = event['found']
+              if found == 'human' || found == 'person':
+                  sns_client = boto3.client('sns')
+                  sms = sns_client.publish(
+                      PhoneNumber = phoneNumber, 
+                      Message= smsMessage,
+                  )
+              else:
+                  raise Exception('No human detected')
+              return
+
+      Handler: index.handler
+      Role: !GetAtt rekRole.Arn
+      Runtime: python3.11
+      Environment:
+        Variables:
+          PHONE_NUMBER: !Ref NotificationPhoneNumber
+
+  StateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      DefinitionString: !Sub |-
+        {
+          "StartAt": "Process Image", 
+          "TimeoutSeconds":300,
+          "States": {
+            "Process Image": {
+              "Next": "Human Found?",
+              "Type":"Task",
+              "Resource":  "${rekFunction.Arn}"
+            },
+            "Human Found?":{
+              "Type":"Choice",
+              "Choices":[
+                {"Variable": "$.found", "StringEquals":"human", "Next":"Process Human"},
+                {"Variable":"$.found", "StringEquals":"other",   "Next":"Other Processing"}
+              ]
+            },
+            "Process Human":{
+              "Next":"We succeeded! Yay!",
+              "Type":"Task",
+              "Resource": "${notificationFunction.Arn}"
+            },
+            "Other Processing": {
+              "Type":"Pass",
+              "Next":"We succeeded! Yay!"
+            },
+            "We succeeded! Yay!": {
+              "Type":"Succeed"
+            }
+          }
+        }
+      RoleArn: !GetAtt StateMachineRole.Arn
+
+Outputs:
+
+  TheUploadBucket:
+    Description:  URL of the S3 Bucket you can upload images to.  If images contain a human you should be notified.
+    Value: !Ref UploadBucket  

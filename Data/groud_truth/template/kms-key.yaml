@@ -1,0 +1,79 @@
+---
+# Copyright 2018 widdix GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'cfn-modules: AWS KMS key'
+# cfn-modules:implements(ExposeArn, LambdaDependency)
+Parameters:
+  AliasName:
+    Description: 'Optional alias name (if not set, the stack name is used).'
+    Type: String
+    Default: ''
+Conditions:
+  HasAliasName: !Not [!Equals [!Ref AliasName, '']]
+Resources:
+  Alias:
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Type: 'AWS::KMS::Alias'
+    Properties:
+      AliasName: !If [HasAliasName, !Sub 'alias/${AliasName}', !Sub 'alias/${AWS::StackName}']
+      TargetKeyId: !Ref Key
+  Key:
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Type: 'AWS::KMS::Key'
+    Properties:
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:root'
+          Action: 'kms:*'
+          Resource: '*'
+        - Effect: Allow
+          Principal:
+            AWS: '*'
+          Action:
+          - 'kms:Encrypt'
+          - 'kms:Decrypt'
+          - 'kms:ReEncrypt*'
+          - 'kms:GenerateDataKey*'
+          - 'kms:DescribeKey'
+          Resource: '*'
+          Condition:
+            StringEquals:
+              'kms:CallerAccount': !Ref 'AWS::AccountId'
+            StringLike:
+              'kms:ViaService': !Sub '*.${AWS::Region}.amazonaws.com'
+Outputs:
+  ModuleId:
+    Value: 'kms-key'
+  ModuleVersion:
+    Value: '1.2.1'
+  StackName:
+    Value: !Ref 'AWS::StackName'
+  Arn:
+    Value: !GetAtt Key.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-Arn'
+  IamActions:
+    Value: 'kms:Encrypt,kms:Decrypt,kms:ReEncrypt*,kms:GenerateDataKey*,kms:DescribeKey'
+    Export:
+      Name: !Sub '${AWS::StackName}-IamActions'
+  IamResources:
+    Value: !GetAtt Key.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-IamResources'

@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "ServiceCatalog S3 Launch Role"
+Resources:
+  SCS3LaunchRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: SCS3LaunchRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - servicecatalog.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: SCLaunchPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: SCLaunchPolicySID
+                Effect: Allow
+                Action:
+                  - "servicecatalog:ListServiceActionsForProvisioningArtifact"
+                  - "servicecatalog:ExecuteprovisionedProductServiceAction"
+                  - "iam:CreatePolicy"
+                  - "iam:GetPolicy"
+                  - "iam:DeletePolicy"
+                  - "iam:ListRolePolicies"
+                  - "iam:ListPolicies"
+                  - "iam:DeleteRole"
+                  - "iam:GetRole"
+                  - "iam:PassRole"
+                  - "iam:ListRoles"
+                  - "iam:CreateRole"
+                  - "iam:DetachRolePolicy"
+                  - "iam:AttachRolePolicy"
+                  - "iam:PutRolePolicy"
+                  - "iam:DeleteRolePolicy"
+                  - "iam:TagRole"
+                  - "iam:UntagRole"
+                  - "iam:ListPolicyVersions"
+                  - "lambda:CreateFunction"
+                  - "lambda:DeleteFunction"
+                  - "lambda:GetFunction"
+                  - "lambda:GetFunctionConfiguration"
+                  - "lambda:UpdateFunctionCode"
+                  - "lambda:AddPermission"
+                  - "lambda:RemovePermission"
+                  - "lambda:InvokeFunction"
+                  - "lambda:TagResource"
+                  - "lambda:UntagResource"
+                  - "lambda:ListTags"
+                  - "cloudformation:DescribeStackResource"
+                  - "cloudformation:DescribeStackResources"
+                  - "cloudformation:GetTemplate"
+                  - "cloudformation:List*"
+                  - "cloudformation:DescribeStackEvents"
+                  - "cloudformation:DescribeStacks"
+                  - "cloudformation:CreateStack"
+                  - "cloudformation:DeleteStack"
+                  - "cloudformation:DescribeStackEvents"
+                  - "cloudformation:DescribeStacks"
+                  - "cloudformation:GetTemplateSummary"
+                  - "cloudformation:SetStackPolicy"
+                  - "cloudformation:ValidateTemplate"
+                  - "cloudformation:UpdateStack"
+                  - "cloudformation:*ChangeSet*"
+                  - "SNS:Subscribe"
+                  - "SNS:Unsubscribe"
+                Resource: '*'
+Outputs:
+  LaunchRoleArn:
+    Value: !GetAtt SCS3LaunchRole.Arn
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-LaunchRoleArn'
+  LaunchRoleName:
+    Value: !Ref SCS3LaunchRole
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-LaunchRoleName'

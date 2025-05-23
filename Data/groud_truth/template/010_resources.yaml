@@ -1,0 +1,68 @@
+
+
+Resources:
+  # S3 bucket for EMR scripts
+  GlueSampleS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "s3-glue-runner-sample-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  GlueIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: role-glue-sample
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - glue.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+
+  SampleGlueJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Name: gluej-runner-sample-job
+      GlueVersion: 4.0
+      Description: "Sample Glue Job for Glue Runner Test"
+      Role: !GetAtt GlueIAMRole.Arn
+      Command:
+        Name: glueetl
+        PythonVersion: 3
+        ScriptLocation: !Sub "s3://${GlueSampleS3Bucket}/glue_scripts/sample_convert.py"   # placeholder here
+      DefaultArguments:
+        "--enable-metrics": "true" 
+        "--enable-job-insights": "true"
+        "--enable-observability-metrics" : "true"
+        "--enable-spark-ui": "true"
+        "--spark-event-logs-path": !Sub "s3://${GlueSampleS3Bucket}/spark-event-logs/"        
+      #   "--enable-auto-scaling": "true" # when we use auto-scaling - 1 
+      # MaxCapacity: 2 # when we use auto-scaling - 2
+      NumberOfWorkers: 2  # when we DON't use auto-scaling - 1
+      WorkerType: G.1X # when we DON't use auto-scaling - 2
+
+
+
+Outputs:
+  GlueSampleS3Bucket:
+    Description: S3 Bucket for Glue scripts
+    Value: !Ref GlueSampleS3Bucket
+    Export:
+      Name: GlueSampleS3Bucket
+
+  SampleGlueJob:
+    Description: Sample Glue Job for Glue Runner Test
+    Value: !Ref SampleGlueJob
+    Export:
+      Name: SampleGlueJob

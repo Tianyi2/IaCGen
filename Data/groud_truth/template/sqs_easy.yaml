@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for single SQS.
+
+Resources:
+  MyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 5

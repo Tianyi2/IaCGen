@@ -1,0 +1,81 @@
+---
+# Copyright 2018 widdix GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'cfn-modules: Amaznon Cognito User Pool'
+# cfn-modules:implements(ExposeArn, ExposeId)
+Parameters:
+  InitialUser:
+    Description: 'Optional email address for initial user (temporary password via email).'
+    Type: String
+    Default: 'testanu@gmail.com'
+Conditions:
+  HasInitialUser: !Not [!Equals [!Ref InitialUser, '']]
+Resources:
+  UserPool:
+    Type: 'AWS::Cognito::UserPool'
+    Properties:
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+        InviteMessageTemplate:
+          EmailSubject: !Sub '${AWS::StackName}: temporary password'
+          EmailMessage: 'Use the username {username} and the temporary password {####} to log in for the first time.'
+          SMSMessage: 'Use the username {username} and the temporary password {####} to log in for the first time.'
+      AutoVerifiedAttributes:
+      - email
+      UsernameAttributes:
+      - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 16
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+          RequireUppercase: false
+          TemporaryPasswordValidityDays: 21
+  User:
+    Condition: HasInitialUser
+    Type: 'AWS::Cognito::UserPoolUser'
+    Properties:
+      DesiredDeliveryMediums:
+      - EMAIL
+      UserAttributes:
+      - Name: 'email'
+        Value: !Ref InitialUser
+      Username: !Ref InitialUser
+      UserPoolId: !Ref UserPool
+  UserPoolDomain:
+    Type: 'AWS::Cognito::UserPoolDomain'
+    Properties:
+      UserPoolId: !Ref UserPool
+      Domain: !Select [2, !Split ['/', !Ref 'AWS::StackId']]
+Outputs:
+  ModuleId:
+    Value: 'cognito-userpool'
+  ModuleVersion:
+    Value: '2.0.0'
+  StackName:
+    Value: !Ref 'AWS::StackName'
+  Arn:
+    Value: !GetAtt 'UserPool.Arn'
+    Export:
+      Name: !Sub '${AWS::StackName}-Arn'
+  Id:
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub '${AWS::StackName}-Id'
+  Domain:
+    Value: !Ref UserPoolDomain
+    Export:
+      Name: !Sub '${AWS::StackName}-Domain'

@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Setup AWS Macie"
+Resources:
+  MacieSession:
+    Type: AWS::Macie::Session
+    Properties:
+      FindingPublishingFrequency: FIFTEEN_MINUTES
+      Status: ENABLED
+Outputs:
+  MacieSessionServiceRole:
+    Description: "The Macie session service role"
+    Value: !GetAtt MacieSession.ServiceRole
+    Export:
+      Name: !Sub '${AWS::StackName}-MacieSessionServiceRole'

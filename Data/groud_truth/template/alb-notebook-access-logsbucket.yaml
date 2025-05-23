@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create ALB that can be modified by Service Catalog provisioning requests
+
+# Include only one region in the map today
+# See: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html
+Mappings:
+  ELBAccountsMap:
+    us-east-1:
+      "ELBAccountRoot": "arn:aws:iam::127311923021:root"
+
+Resources:
+
+  ALBAccessLogsBucket:
+    Type: AWS::S3::Bucket
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks: [ "W3045" ]
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AccessControl: Private
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+        - ExpirationInDays: 90
+          Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+
+# AWS required policy for writing ALB logs:
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html#access-logging-bucket-permissions
+  ALBAccessLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ALBAccessLogsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowALBAccountWrite
+            Effect: Allow
+            Principal:
+              AWS: !FindInMap [ ELBAccountsMap, !Ref "AWS::Region", ELBAccountRoot ]
+            Action: s3:PutObject
+            Resource: !Sub ${ALBAccessLogsBucket.Arn}/*
+          - Sid: AllowAwsServiceWrite
+            Effect: Allow
+            Principal:
+              Service: delivery.logs.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub ${ALBAccessLogsBucket.Arn}/*
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+          - Sid: AllowAwsServiceAclCheck
+            Effect: Allow
+            Principal:
+              Service: delivery.logs.amazonaws.com
+            Action: s3:GetBucketAcl
+            Resource: !GetAtt ALBAccessLogsBucket.Arn
+
+Outputs:
+  ALBAccessLogsBucket:
+    Description: 'Application Load Balancer access logs output S3 bucket'
+    Value: !Ref ALBAccessLogsBucket
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-ALBAccessLogsBucket'
+  ALBAccessLogsBucketArn:
+    Description: 'Application Load Balancer access logs output S3 bucket ARN'
+    Value: !GetAtt ALBAccessLogsBucket.Arn
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-ALBAccessLogsBucketArn'

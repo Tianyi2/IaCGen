@@ -1,0 +1,88 @@
+---
+# Copyright 2018 widdix GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'cfn-modules: AWS Kinesis data stream'
+# cfn-modules:implements(ExposeArn, ExposeName, LambdaDependency)
+Parameters:
+  RetentionPeriodHours:
+    Description: 'The number of hours for the data records that are stored in shards to remain accessible.'
+    Type: Number
+    Default: 24
+    MinValue: 24
+    MaxValue: 168
+  ShardCount:
+    Description: 'The number of shards that the stream uses.'
+    Type: Number
+    Default: 1
+    MinValue: 1
+Resources:
+  Stream:
+    Type: 'AWS::Kinesis::Stream'
+    Properties:
+      RetentionPeriodHours: !Ref RetentionPeriodHours
+      ShardCount: !Ref ShardCount
+  StreamReadProvisionedThroughputExceededAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: 'stream read provisioned throughput exceeded'
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+      - Name: StreamName
+        Value: !Ref Stream
+      EvaluationPeriods: 1
+      MetricName: ReadProvisionedThroughputExceeded
+      Namespace: 'AWS/Kinesis'
+      Period: 300
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: notBreaching
+  StreamWriteProvisionedThroughputExceededAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: 'stream write provisioned throughput exceeded'
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+      - Name: StreamName
+        Value: !Ref Stream
+      EvaluationPeriods: 1
+      MetricName: WriteProvisionedThroughputExceeded
+      Namespace: 'AWS/Kinesis'
+      Period: 300
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: notBreaching
+Outputs:
+  ModuleId:
+    Value: 'kinesis-data-stream'
+  ModuleVersion:
+    Value: '0.1.0'
+  StackName:
+    Value: !Ref 'AWS::StackName'
+  Arn:
+    Value: !GetAtt 'Stream.Arn'
+    Export:
+      Name: !Sub '${AWS::StackName}-Arn'
+  IamActions:
+    Value: 'kinesis:GetRecords,kinesis:GetShardIterator,kinesis:PutRecord,kinesis:PutRecords'
+    Export:
+      Name: !Sub '${AWS::StackName}-IamActions'
+  IamResources:
+    Value: !GetAtt 'Stream.Arn'
+    Export:
+      Name: !Sub '${AWS::StackName}-IamResources'
+  Name:
+    Value: !Ref Stream
+    Export:
+      Name: !Sub '${AWS::StackName}-Name'

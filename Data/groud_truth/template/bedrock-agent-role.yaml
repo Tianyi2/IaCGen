@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Enables executing a Bedrock model
+
+Resources:
+# https://docs.aws.amazon.com/bedrock/latest/userguide/agents-permissions.html
+  bedrockAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*"
+      Policies:
+        - PolicyName: bedrockAgentPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "bedrock:InvokeModel"
+                Resource:
+                  - !Sub "arn:aws:bedrock:${AWS::Region}::foundation-model/*"
+              - Effect: Allow
+                Action: "lambda:InvokeFunction"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
+
+Outputs:
+  BedrockAgentRoleArn:
+    Description: The ARN of the Bedrock Agent Role
+    Value: !GetAtt bedrockAgentRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-BedrockAgentRoleArn'

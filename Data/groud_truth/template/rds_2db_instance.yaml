@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: 'Template creates an Amazon Aurora DB cluster and adds two DB instances to it.'
+
+Parameters:
+  Username:
+    NoEcho: 'true'
+    Description: Username for Aurora MySQL database access
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    Default: "bevelvoerder"
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  Password:
+    NoEcho: 'true'
+    Description: Password for Aurora MySQL database access
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    Default: "Passw0rd"
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+    
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: Aurora VPC
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  Subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: us-east-1a
+      Tags:
+        - Key: Name
+          Value: Aurora Subnet 1
+
+  Subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: us-east-1b
+      Tags:
+        - Key: Name
+          Value: Aurora Subnet 2
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for Aurora cluster
+      SubnetIds: 
+        - !Ref Subnet1
+        - !Ref Subnet2
+
+  RDSCluster:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      MasterUsername:
+        Ref: Username
+      MasterUserPassword:
+        Ref: Password
+      Engine: aurora-mysql
+      EngineVersion: "8.0.mysql_aurora.3.04.0"  # Use a valid 8.0 version
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBClusterParameterGroupName:
+        Ref: RDSDBClusterParameterGroup
+        
+  RDSDBInstance1:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBParameterGroupName:
+        Ref: RDSDBParameterGroup
+      Engine: aurora-mysql
+      DBClusterIdentifier:
+        Ref: RDSCluster
+      PubliclyAccessible: 'true'
+      DBInstanceClass: db.t3.large
+
+  RDSDBInstance2:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBParameterGroupName:
+        Ref: RDSDBParameterGroup
+      Engine: aurora-mysql
+      DBClusterIdentifier:
+        Ref: RDSCluster
+      PubliclyAccessible: 'true'
+      DBInstanceClass: db.t3.large
+  RDSDBClusterParameterGroup:
+    Type: 'AWS::RDS::DBClusterParameterGroup'
+    Properties:
+      Description: CloudFormation Sample Aurora Cluster Parameter Group
+      Family: aurora-mysql8.0
+      Parameters:
+        time_zone: US/Eastern
+  RDSDBParameterGroup:
+    Type: 'AWS::RDS::DBParameterGroup'
+    Properties:
+      Description: CloudFormation Sample Aurora Parameter Group
+      Family: aurora-mysql8.0
+      Parameters:
+        sql_mode: IGNORE_SPACE
+        max_allowed_packet: 1024
+        innodb_buffer_pool_size: '{DBInstanceClassMemory*3/4}'

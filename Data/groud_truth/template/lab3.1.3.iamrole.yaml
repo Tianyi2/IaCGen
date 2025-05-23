@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "lab 3.1.1 iam role"
+
+Resources:
+  LabRole:
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Principal: 
+              Service: 
+                - "ec2.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      RoleName: "su-jdlabs-311"
+
+  LabRole313:
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Principal: 
+              Service: 
+                - "ec2.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      RoleName: "su-jdlabs-313"
+      
+  LabPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties: 
+      Description: "added role 313"
+      # ManagedPolicyName: su-jdlabs-mp-312
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+            - iam:Get*
+            - iam:List*
+            Resource: "arn:aws:iam::*"
+      Roles:
+        - !Ref LabRole
+        - !Ref LabRole313

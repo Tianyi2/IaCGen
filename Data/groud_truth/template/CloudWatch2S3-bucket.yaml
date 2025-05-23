@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Bucket for CloudWatch exports
+Parameters:
+  BucketVersioning:
+    Type: String
+    Description: Enabled to enable bucket versioning, default is Suspended
+    AllowedValues:
+      - Enabled
+      - Suspended
+    Default: Suspended
+  BucketName:
+    Type: String
+    Description: (Optional) Name of the created bucket.
+    Default: ""
+Conditions:
+  HasBucketName: !Not [!Equals [!Ref BucketName, ""]]
+Resources:
+  Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !If [HasBucketName, !Ref BucketName, !Ref 'AWS::NoValue']
+      VersioningConfiguration:
+        Status: !Ref BucketVersioning
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      # Move data to glacier after 90 days then move to deep archive after 180 days then delete after 365 days
+      LifecycleConfiguration:
+        Rules:
+        - Id: DataLifecycleRule
+          Status: Enabled
+          ExpirationInDays: 365
+          Transitions:
+            - TransitionInDays: 90
+              StorageClass: GLACIER
+            - TransitionInDays: 180
+              StorageClass: DEEP_ARCHIVE
+Outputs:
+  Bucket:
+    Value: !Ref Bucket
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-Bucket'
+  BucketArn:
+    Value: !GetAtt Bucket.Arn
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BucketArn'

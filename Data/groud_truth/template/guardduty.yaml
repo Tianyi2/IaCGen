@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Enable Guardduty'
+
+Resources:
+  Detector:
+      Type: AWS::GuardDuty::Detector
+      Properties:
+          Enable: True
+          FindingPublishingFrequency: FIFTEEN_MINUTES
+          DataSources:
+            Kubernetes:
+              AuditLogs:
+                Enable: False
+            MalwareProtection:
+              ScanEc2InstanceWithFindings:
+                EbsVolumes: True
+            S3Logs:
+              Enable: True
+
+Outputs:
+  DetectorId:
+    Value: !Ref Detector
+    Export:
+      Name: !Sub '${AWS::StackName}-detector-id'

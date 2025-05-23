@@ -1,0 +1,280 @@
+# Re-creates a simpler version of lab 3 from Advanced Developer, without CDK, Cloud9, 
+# or a superflous lambda to trigger the state machine.
+# It takes photos uploaded into a bucket, runs it through step functions, detects if a
+# human is in the photo via rekognition, then sends an SMS to a phone # you specify.
+# The state machine is triggered by a CloudWatch Event (EventBridge Event)
+
+Parameters:
+
+  NotificationPhoneNumber:
+    Description:  Cell Phone / SMS Number to be contacted at.  
+    Type:  String
+    Default:  "+14072223333"
+
+
+Resources:
+  
+  #  Bucket into which one can upload images.  
+  #  If images contain a human, you will be notified.
+  #  Enabling EventBridge is key to allowing the upload to be detected. 
+  UploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub recognition-upload-${AWS::StackName}
+      NotificationConfiguration:
+        EventBridgeConfiguration: 
+          EventBridgeEnabled:  true 
+
+
+  # This rule detects objects uploaded into our upload bucket.
+  # It fires off the step functions state machine.
+  EventRule:  
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Sub recognition-upload-rule-${AWS::StackName}
+      Description: Trigger step functions on upload to bucket.
+      EventPattern: 
+        source: [ "aws.s3" ]
+        detail-type: ["Object Created"]
+        detail: 
+          bucket:
+            name: [ !Ref UploadBucket ]       
+      Targets: 
+      - Arn: !Ref StateMachine
+        Id: StateMachine
+        RoleArn: !GetAtt RecognitionEventBridgeRole.Arn
+
+  # This role is required by EventBridge to allow it to trigger the step function
+  RecognitionEventBridgeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub recognition-eventbridge-role-${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: events.amazonaws.com
+
+  # Allow the execution of the state machine
+  RecognitionEventBridgePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub recognition-eventbridge-policy-${AWS::StackName}
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: states:StartExecution
+            Resource: !Ref StateMachine
+      Roles: [ !Ref RecognitionEventBridgeRole ]
+
+
+  # When triggered by the EventBridge rule, use rekognition to detect-labels.
+  # Reject any non-image file types
+  # See if any labels indicate human, send a text message if so.
+  # Rekognition and SNS are called directly without Lambda functions
+  # The ResultSelector simplifies the output from Rekognition so the Choice can handle it.
+  StateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName:  !Sub recognition-state-machine-${AWS::StackName}
+      DefinitionString: !Sub |-        
+        {
+          "StartAt": "Check File Extension",
+          "TimeoutSeconds": 300,
+          "States": {
+            "Check File Extension": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Or": [
+                    { "Variable": "$.detail.object.key", "StringMatches": "*.jpg" },
+                    { "Variable": "$.detail.object.key", "StringMatches": "*.jpeg" },
+                    { "Variable": "$.detail.object.key", "StringMatches": "*.png" },
+                    { "Variable": "$.detail.object.key", "StringMatches": "*.bmp" },
+                    { "Variable": "$.detail.object.key", "StringMatches": "*.gif" },
+                    { "Variable": "$.detail.object.key", "StringMatches": "*.tiff" }
+                  ],
+                  "Next": "Detect Human"
+                }
+              ],
+              "Default": "Failure"
+            },
+            "Detect Human": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:rekognition:detectLabels",
+              "Parameters": {
+                "Image": {
+                  "S3Object": {
+                    "Bucket.$": "$.detail.bucket.name",
+                    "Name.$": "$.detail.object.key"
+                  }
+                },
+                "MaxLabels": 10,
+                "MinConfidence": 75
+              },
+              "ResultSelector": {
+                "human_found.$": "$.Labels[?(@.Name=='Person'||@.Name=='Human')].Name"
+              },
+              "Next": "Human Found?"
+            },
+            "Human Found?": {
+              "Type": "Choice",
+              "Choices": [
+                { "Variable": "$.human_found[0]", "IsPresent": true, "Next": "Send Notification" }
+              ],
+              "Default": "Success"
+            },
+            "Send Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:sns:publish",
+              "Parameters": {
+                "Message": "We found a human!!",
+                "PhoneNumber": "${NotificationPhoneNumber}"
+              },
+              "Next": "Success"
+            },
+            "Failure": {
+              "Type": "Fail",
+              "Error": "UnsupportedFileExtension",
+              "Cause": "The file extension is not a supported image type."
+            },            
+            "Success": {
+              "Type": "Succeed"
+            }
+          }
+        }
+      RoleArn: !GetAtt StateMachineRole.Arn
+
+  # This role controls what the state machine can do:
+  StateMachineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub recognition-state-machine-role-${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: !Sub states.${AWS::Region}.amazonaws.com
+
+  # The state machine can read from S3, call recognition, and publish SNS notifications:
+  StateMachinePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub recognition-state-machine-policy-${AWS::StackName}
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 
+            - sns:Publish
+            - s3:Get*
+            - rekognition:Detect*
+            Resource: '*'
+      Roles: [ !Ref StateMachineRole ]
+
+
+
+  # This custom resource cleans out buckets before delete:
+  CleanupCustomResource:
+    Type: Custom::helper
+    Properties:
+      ServiceToken: !GetAtt CleanupLambda.Arn
+      uploadBucket: !Ref UploadBucket
+
+  # This function will cleanup our buckets to allow delete
+  CleanupLambda:
+    Type: AWS::Lambda::Function
+    DependsOn: [CleanupCustomResourcePolicy, CloudwatchLogsGroupCleanup]
+    Properties: 
+      FunctionName: !Sub ${AWS::StackName}-CleanupFunction
+      Role: !GetAtt CleanupCustomResourceRole.Arn
+      MemorySize: 128     
+      Timeout: 5
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Code:
+        ZipFile: !Sub |
+          # import json
+          # import os
+          import cfnresponse
+          import boto3
+ 
+          print('Loading function')
+
+          # Entry point:
+          def lambda_handler(event, context):
+
+              # Get the CloudFormation request type and other input:
+              requestType = event['RequestType']
+              rp          = event['ResourceProperties']
+              uploadBucket   = rp['uploadBucket']
+              #cloudTrailBucket   = rp['cloudTrailBucket']
+
+              if requestType == 'Delete':
+                print ('Clean out buckets to enable delete... ' )
+                boto3.resource('s3').Bucket(uploadBucket).objects.all().delete()
+
+              # Unless something blew up, we should wander into this code:
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+
+              
+  # This Role gives permission to our custom resource Lambda.
+  CleanupCustomResourceRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: !Sub ${AWS::StackName}-CleanupCustomResourceRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns: 
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole" 
+
+
+  # This Policy is attached to the CustomResourceRole.
+  # Basic permissions for CloudWatch Logs, plus S3.
+  CleanupCustomResourcePolicy:
+    Type: AWS::IAM::Policy
+    Properties: 
+      PolicyName: !Sub ${AWS::StackName}-CleanupCustomResourcePolicy
+      PolicyDocument: 
+        Version: 2012-10-17
+        Statement: 
+          Effect: Allow
+          Action: 
+            - s3:Delete*
+            - s3:List*
+            - s3:Get*
+          Resource: "*"
+      Roles: 
+        -  !Ref CleanupCustomResourceRole   
+
+  # CloudWatch Logs Groups are created automatically when Lambdas execute, but they are retained forever by default.
+  # To control this, make them part of the stack:
+  CloudwatchLogsGroupCleanup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-CleanupFunction
+      RetentionInDays: 3
+
+Outputs:
+
+  TheUploadBucket:
+    Description:  Click here to s33 the S3 Bucket you can upload images to.  If images contain a human you should be notified.
+    Value: !Sub https://s3.console.aws.amazon.com/s3/buckets/${UploadBucket}?region=${AWS::Region}&tab=objects   
+
+  EventBridgeConsole:
+    Description: The EventBridge console displaying the Rule used to detect uploads and trigger the state machine.
+    Value: !Sub https://${AWS::Region}.console.aws.amazon.com/events/home?region=${AWS::Region}#/eventbus/default/rules/${EventRule}
+
+  StepFunctionsConsole:
+    Description: The StepFunctions console displaying the state machine
+    Value: !Sub https://${AWS::Region}.console.aws.amazon.com/states/home?region=${AWS::Region}#/statemachines/view/${StateMachine}

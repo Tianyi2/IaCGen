@@ -1,0 +1,43 @@
+# copied from https://rnanthan.medium.com/centralised-network-connectivity-with-aws-transit-gateway-7358bb321743
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Transit Gateway for VPC connections'
+Parameters:
+  Principals:
+    Description: >-
+      The list of principals to associate with the resource share. The possible values are list of IDs of AWS accounts
+    Type: List<String>
+    Default: 644519422710
+Resources:  
+  TransitGateway:
+    Type: "AWS::EC2::TransitGateway"
+    Properties:
+      AmazonSideAsn: 65000
+      AutoAcceptSharedAttachments: "enable"
+      DefaultRouteTableAssociation: "enable"
+      DefaultRouteTablePropagation: "enable"
+      DnsSupport: "enable"
+      VpnEcmpSupport: "enable"
+      Tags:
+        - Key: Application
+          Value: TransitGateway
+  TransitGatewayResourceshare:
+    Type: "AWS::RAM::ResourceShare"
+    Properties:
+      Name: !Sub '${AWS::StackName}-resource-share'
+      ResourceArns:
+        - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:transit-gateway/${TransitGateway}'
+      Principals: !Ref Principals
+      Tags:
+        - Key: Application
+          Value: TransitGatewayResourceshare
+Outputs:
+  TransitGatewayId:
+    Description: 'Transit Gateway Id.'
+    Value: !Ref TransitGateway
+    Export:
+      Name: !Sub '${AWS::StackName}-TransitGatewayId'
+  TransitGatewayResourceshareId:
+    Description: 'Transit Gateway Resource Share Id.'
+    Value: !Ref TransitGatewayResourceshare
+    Export:
+      Name: !Sub '${AWS::StackName}-TransitGatewayResourceshareId'
