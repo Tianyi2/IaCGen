@@ -695,33 +695,18 @@ def process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=0, end
         IterativeTemplateGenerator.generate_error_history_csv(error_csv_path)
 
 
-def start_iterative_generation():
-    input_csv = "dataset/ioc.csv"
-    llm_type = "claude"  # "gemini", "gpt", "claude", or "deepseek"
-    llm_model = "claude-3-7-sonnet-20250219"   # [gemini-1.5-flash, gpt-4o, o3-mini, o1, claude-3-5-sonnet-20241022, claude-3-7-sonnet-20250219, deepseek-chat [V3], deepseek-reasoner [R1]]
-    output_csv = f"result/iterative_{llm_model}_results.csv"
-    start_row = 25
-    end_row = 27  # 135
-    
-    print(f"Starting iterative generation with {llm_type} model")
-
-    # DeepSeek S3
-    process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=137, end_row=138)   # start row include, end row exclude
-    # process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=106, end_row=107)   # start row include, end row exclude
-    # process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=112, end_row=113)   # start row include, end row exclude
-
-   
-    print(f"Generation completed. Results saved to: {output_csv}")
-
-
 # Start
 if __name__ == "__main__":
-    print("ABCD")
-    start_iterative_generation()
-    # print(analyze_resource_coverage("groud_truth/template/EC2_Instance_With_Ephemeral_Drives.yaml", "llm_generated_data/template/iterative/claude/claude-3-5-sonnet-20241022/row_10_update_8_template_20250225_053432.yaml"))
-    # deploy_result = evaluate_template_deployment("C:/Users/16567/Desktop/code/groud_truth/template/sqs-pipes-batch-service.yaml")   # resource-dependencies-challenge -> Issue
-    # deploy_result = evaluate_template_deployment("C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/gpt/o3-mini/row_114_update_22_template_20250502_125814.yaml")
-    # print(deploy_result) 
-    # print(evaluate_template_deployment("C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/gpt/o3-mini/row_4_update_8_template_20250430_095812.yaml"))
-    # print(deploy_result['error_message'])
-    # print(deploy_result['failed_reason'])
+    print("IaCGen Starting")
+    input_csv = "dataset/iac.csv"
+    llm_type = "claude"  # "gemini", "gpt", "claude", or "deepseek"
+    llm_model = "claude-3-7-sonnet-20250219"  # [gemini-1.5-flash, gpt-4o, o3-mini, o1, claude-3-5-sonnet-20241022, claude-3-7-sonnet-20250219, deepseek-chat [V3], deepseek-reasoner [R1]]
+    output_csv = f"result/iterative_{llm_model}_results.csv"
+    start_row = 0
+    end_row = 153
+
+    print(f"Starting iterative generation with {llm_type} model")
+
+    process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=start_row, end_row=end_row)  # start row include, end row exclude
+
+    print(f"Generation completed. Results saved to: {output_csv}")
