@@ -3,7 +3,7 @@ from openai import OpenAI
 import anthropic
 import pandas as pd
 import google.generativeai as genai
-from prompts.prompt_for_cloud import TEMPLATE_GENERATE_PROMPT, SYSMTE_TEMPLATE_GENERATE_PROMPT, GPT_TEMPLATE_GENERATE_HELPER_PROMPT, TOP_PROMPT, BOTTOM_PROMPT
+from Code.generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT
 from Config.configs import GEMIN_API_KEY, CHATGPT_API_KEY, CLAUDE_API_KEY, DEEPSEEK_API_KEY
 
 OUTPUT_PATH = "Result/llm_generated_data/template/"

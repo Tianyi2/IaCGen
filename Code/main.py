@@ -18,7 +18,7 @@ from evaluation.cloud_evaluation import (
     analyze_resource_coverage
 )
 from Config.configs import GEMIN_API_KEY, CHATGPT_API_KEY, CLAUDE_API_KEY, DEEPSEEK_API_KEY
-from generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT, SYSTEM_PROMPT, FORMATE_SYSTEM_PROMPT
+from Code.generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT, FORMATE_SYSTEM_PROMPT
 
 # Import necessary LLM libraries
 import google.generativeai as genai
@@ -701,7 +701,7 @@ if __name__ == "__main__":
     input_csv = "dataset/iac.csv"
     llm_type = "claude"  # "gemini", "gpt", "claude", or "deepseek"
     llm_model = "claude-3-7-sonnet-20250219"  # [gemini-1.5-flash, gpt-4o, o3-mini, o1, claude-3-5-sonnet-20241022, claude-3-7-sonnet-20250219, deepseek-chat [V3], deepseek-reasoner [R1]]
-    output_csv = f"result/iterative_{llm_model}_results.csv"
+    output_csv = f"Result/iterative_{llm_model}_results.csv"
     start_row = 0
     end_row = 153
 

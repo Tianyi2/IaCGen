@@ -21,6 +21,18 @@ the type of feedback.
 5. **Note**: To perform the evaluation of LLMs on IaC, you can first run the main.py and run security.py or user_intent.py if you want to validate security and user intent aspects.
 
 
+## Supporting LLMs
+Currently, models from the below providers are all supported by IaCGen. 
+1. DeepSeek
+2. OpenAI (GPT)
+3. Claude
+4. Gemini
+
+You can update the `llm_model` to define the LLM model you want to use. The value of `llm_model` should follow the model name given by the LLM provider.
+
+`llm_type` should be either value of `"gemini", "gpt", "claude", or "deepseek"`. When update the `llm_model`, you should update the `llm_type` to the corresponding provider name.
+
+
 
 ## Prompts
 You can check the prompt in [prompt_for_cloud.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/generation/prompts/prompt_for_cloud.py) and below.
