@@ -17,7 +17,7 @@ from evaluation.cloud_evaluation import (
     evaluate_template_deployment,
     analyze_resource_coverage
 )
-from my_configs.config import GEMIN_API_KEY, CHATGPT_API_KEY, CLAUDE_API_KEY, DEEPSEEK_API_KEY
+from Config.configs import GEMIN_API_KEY, CHATGPT_API_KEY, CLAUDE_API_KEY, DEEPSEEK_API_KEY
 from generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT, SYSTEM_PROMPT, FORMATE_SYSTEM_PROMPT
 
 # Import necessary LLM libraries
