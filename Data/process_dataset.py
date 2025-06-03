@@ -2,7 +2,6 @@ import pandas as pd
 import yaml
 import json
 import os
-import sys
 from Code.evaluation.cloud_evaluation import get_required_resource_types
 
 
