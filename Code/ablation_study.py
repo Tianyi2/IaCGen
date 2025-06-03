@@ -1,6 +1,10 @@
 import os
-from datetime import datetime
 import pandas as pd
+import google.generativeai as genai
+import anthropic
+from datetime import datetime
+from dotenv import load_dotenv
+from openai import OpenAI
 from generation.cloud_generation import (
     gemini_generate_cf_template,
     chatgpt_generate_cf_template,
@@ -12,13 +16,16 @@ from evaluation.cloud_evaluation import (
     evaluate_template_deployment,
     analyze_resource_coverage
 )
-from Config.configs import GEMIN_API_KEY, CHATGPT_API_KEY, CLAUDE_API_KEY, DEEPSEEK_API_KEY
-from Code.generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT, FORMATE_SYSTEM_PROMPT
+from generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT, FORMATE_SYSTEM_PROMPT
 
-# Import necessary LLM libraries
-import google.generativeai as genai
-from openai import OpenAI
-import anthropic
+
+# Load environment variables from .env file
+load_dotenv()
+
+GEMIN_API_KEY = os.getenv('GEMIN_API_KEY', '')
+CHATGPT_API_KEY = os.getenv('CHATGPT_API_KEY', '')
+CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY', '')
+DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '')
 
 
 class IterativeTemplateGenerator:
@@ -699,7 +706,7 @@ if __name__ == "__main__":
     input_csv = "Data/iac.csv"
     output_csv = f"Result/ablation_study/iterative_{llm_model}_results.csv"
     start_row = 0
-    end_row = 0
+    end_row = 153
     print("IaCGen Starting - Ablation Study without conversation history")
     print(f"Starting iterative generation with {llm_type} model")
     process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=start_row, end_row=end_row)

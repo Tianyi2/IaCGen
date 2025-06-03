@@ -1,10 +1,20 @@
 import os
-from openai import OpenAI
 import anthropic
 import pandas as pd
 import google.generativeai as genai
-from Code.generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT
-from Config.configs import GEMIN_API_KEY, CHATGPT_API_KEY, CLAUDE_API_KEY, DEEPSEEK_API_KEY
+from openai import OpenAI
+from dotenv import load_dotenv
+from generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT
+
+
+# Load environment variables from .env file
+load_dotenv()
+
+GEMIN_API_KEY = os.getenv('GEMIN_API_KEY', '')
+CHATGPT_API_KEY = os.getenv('CHATGPT_API_KEY', '')
+CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY', '')
+DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '')
+
 
 OUTPUT_PATH = "Result/llm_generated_data/template/"
 
