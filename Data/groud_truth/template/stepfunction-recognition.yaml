@@ -34,11 +34,11 @@ Resources:
       Name: !Sub recognition-upload-rule-${AWS::StackName}
       Description: Trigger step functions on upload to bucket.
       EventPattern: 
-        source: [ "aws.s3" ]
+        source: ["aws.s3"]
         detail-type: ["Object Created"]
         detail: 
           bucket:
-            name: [ !Ref UploadBucket ]       
+            name: [!Ref UploadBucket]
       Targets: 
       - Arn: !Ref StateMachine
         Id: StateMachine
@@ -68,7 +68,7 @@ Resources:
           - Effect: Allow
             Action: states:StartExecution
             Resource: !Ref StateMachine
-      Roles: [ !Ref RecognitionEventBridgeRole ]
+      Roles: [!Ref RecognitionEventBridgeRole]
 
 
   # When triggered by the EventBridge rule, use rekognition to detect-labels.
@@ -175,7 +175,7 @@ Resources:
             - s3:Get*
             - rekognition:Detect*
             Resource: '*'
-      Roles: [ !Ref StateMachineRole ]
+      Roles: [!Ref StateMachineRole]
 
 
 

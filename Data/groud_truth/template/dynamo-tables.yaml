@@ -11,7 +11,7 @@ Parameters:
 
 Conditions:
   CreateProdResources: !Equals [!Ref "Stage", "PROD"]
-  CreateCodeResources: !Not [ !Equals [ !Ref "Stage", "PROD"]]
+  CreateCodeResources: !Not [!Equals [!Ref "Stage", "PROD"]]
 
 Resources:
   ProdTable:
@@ -136,12 +136,12 @@ Outputs:
   ProvisionedTableOutput:
     Condition: CreateProdResources
     Description: This Dynamo table is used to store rate plan information about supporters
-    Value: !GetAtt [ ProdTable, "Arn" ]
+    Value: !GetAtt [ProdTable, "Arn"]
     Export:
       Name: !Sub ${AWS::StackName}-SupporterProductDataTable
   OnDemandTableOutput:
     Condition: CreateCodeResources
     Description: This Dynamo table is used to store rate plan information about supporters
-    Value: !GetAtt [ CodeTable, "Arn" ]
+    Value: !GetAtt [CodeTable, "Arn"]
     Export:
       Name: !Sub ${AWS::StackName}-SupporterProductDataTable

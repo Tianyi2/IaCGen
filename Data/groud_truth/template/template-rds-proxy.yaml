@@ -36,8 +36,8 @@ Resources:
     Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref vpc
-      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv1Cidr ]
-      AvailabilityZone: !Join [ "", [ !Ref "AWS::Region", a ]]
+      CidrBlock: !FindInMap [NetworkSettings, global, subPrv1Cidr]
+      AvailabilityZone: !Join ["", [!Ref "AWS::Region", a]]
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
@@ -48,8 +48,8 @@ Resources:
     Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref vpc
-      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv2Cidr ]
-      AvailabilityZone: !Join [ "", [ !Ref "AWS::Region", b ]]
+      CidrBlock: !FindInMap [NetworkSettings, global, subPrv2Cidr]
+      AvailabilityZone: !Join ["", [!Ref "AWS::Region", b]]
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
@@ -60,8 +60,8 @@ Resources:
     Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref vpc
-      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv3Cidr ]
-      AvailabilityZone: !Join [ "", [ !Ref "AWS::Region", c ]]
+      CidrBlock: !FindInMap [NetworkSettings, global, subPrv3Cidr]
+      AvailabilityZone: !Join ["", [!Ref "AWS::Region", c]]
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
@@ -97,8 +97,8 @@ Resources:
           Value: !Sub "${AWS::StackName}-database-sg"
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort:  !FindInMap [ ClusterSettings, global, port ]
-          ToPort: !FindInMap [ ClusterSettings, global, port ]
+          FromPort:  !FindInMap [ClusterSettings, global, port]
+          ToPort: !FindInMap [ClusterSettings, global, port]
           SourceSecurityGroupId: !GetAtt lambdaSg.GroupId
         - IpProtocol: -1
           FromPort: -1
@@ -154,7 +154,7 @@ Resources:
     Type: "AWS::RDS::DBParameterGroup"
     Properties:
       Description: !Sub "${AWS::StackName}-mysql-node-params"
-      Family: !FindInMap [ ClusterSettings, global, dbFamily ]
+      Family: !FindInMap [ClusterSettings, global, dbFamily]
       Parameters:
         innodb_stats_persistent_sample_pages: "256"
         slow_query_log: "1"
@@ -168,7 +168,7 @@ Resources:
     Properties:
       DBSubnetGroupName: !Sub "${AWS::StackName}-db-subnet-group"
       DBSubnetGroupDescription: "subnets allowed for deploying DB instances"
-      SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ]
+      SubnetIds: [!Ref sub1Private, !Ref sub2Private, !Ref sub3Private]
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-db-subnet-group"
@@ -177,17 +177,17 @@ Resources:
   dbCluster:
     Type: "AWS::RDS::DBCluster"
     Properties:
-      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
-      EngineVersion: !FindInMap [ ClusterSettings, global, dbVersion ]
+      Engine: !FindInMap [ClusterSettings, global, dbEngine]
+      EngineVersion: !FindInMap [ClusterSettings, global, dbVersion]
       DBSubnetGroupName: !Ref dbSubnets
       DBClusterIdentifier: !Sub "${AWS::StackName}-mysql-cluster"
       BackupRetentionPeriod: 1
-      MasterUsername: !Join [ "", [ "{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:username}}" ] ]
-      MasterUserPassword: !Join [ "", [ "{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:password}}" ] ]
-      DatabaseName: !FindInMap [ ClusterSettings, global, dbSchema ]
+      MasterUsername: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:username}}"]]
+      MasterUserPassword: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:password}}"]]
+      DatabaseName: !FindInMap [ClusterSettings, global, dbSchema]
       StorageEncrypted: true
-      VpcSecurityGroupIds: [ !Ref dbClusterSecGroup ]
-      EnableCloudwatchLogsExports: [ error, slowquery ]
+      VpcSecurityGroupIds: [!Ref dbClusterSecGroup]
+      EnableCloudwatchLogsExports: [error, slowquery]
       BacktrackWindow: 86400
       EnableIAMDatabaseAuthentication: true
       DeletionProtection: false
@@ -202,9 +202,9 @@ Resources:
       DBClusterIdentifier: !Ref dbCluster
       DBInstanceIdentifier: !Sub "${AWS::StackName}-mysql-node-1"
       CopyTagsToSnapshot: true
-      DBInstanceClass: !FindInMap [ ClusterSettings, global, nodeType ]
+      DBInstanceClass: !FindInMap [ClusterSettings, global, nodeType]
       DBParameterGroupName: !Ref pgNodeParams
-      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
+      Engine: !FindInMap [ClusterSettings, global, dbEngine]
       MonitoringInterval: 1
       MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
       PubliclyAccessible: false
@@ -223,9 +223,9 @@ Resources:
       DBClusterIdentifier: !Ref dbCluster
       DBInstanceIdentifier: !Sub "${AWS::StackName}-mysql-node-2"
       CopyTagsToSnapshot: true
-      DBInstanceClass: !FindInMap [ ClusterSettings, global, nodeType ]
+      DBInstanceClass: !FindInMap [ClusterSettings, global, nodeType]
       DBParameterGroupName: !Ref pgNodeParams
-      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
+      Engine: !FindInMap [ClusterSettings, global, dbEngine]
       MonitoringInterval: 1
       MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
       PubliclyAccessible: false
@@ -244,10 +244,10 @@ Resources:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Action: [ 'sts:AssumeRole' ]
+          - Action: ['sts:AssumeRole']
             Effect: Allow
             Principal:
-              Service: [ rds.amazonaws.com ]
+              Service: [rds.amazonaws.com]
       Policies:
         - PolicyName: DBProxyPolicy
           PolicyDocument:
@@ -287,7 +287,7 @@ Resources:
       - dbNode2
     Properties:
       DBProxyName: !Ref dbProxy
-      DBClusterIdentifiers: [ !Ref dbCluster ]
+      DBClusterIdentifiers: [!Ref dbCluster]
       TargetGroupName: default
       ConnectionPoolConfigurationInfo:
         MaxConnectionsPercent: 5
@@ -321,7 +321,7 @@ Outputs:
     Value: !GetAtt lambdaSg.GroupId
   databasePort:
     Description: "Database port"
-    Value: !FindInMap [ ClusterSettings, global, port ]
+    Value: !FindInMap [ClusterSettings, global, port]
   rdsProxyEndpoint:
     Description: "RDS Proxy writer endpoint"
     Value: !GetAtt dbProxy.Endpoint

@@ -6,7 +6,6 @@ AWSTemplateFormatVersion: 2010-09-09
 # It also creates two additional subnets that will be needed later.
 
 Resources:
-
   # First, a VPC:
   VPC:
     Type: AWS::EC2::VPC
@@ -52,7 +51,7 @@ Resources:
       VpcId: !Ref VPC
       CidrBlock: 10.0.0.0/24
       MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [ 0, !GetAZs ]    # Get the first AZ in the list        
+      AvailabilityZone: !Select [0, !GetAZs]    # Get the first AZ in the list
       Tags:
       - Key: Name
         Value: Public Subnet 
@@ -61,7 +60,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.2.0/23
-      AvailabilityZone: !Select [ 0, !GetAZs ]    # Get the first AZ in the list  
+      AvailabilityZone: !Select [0, !GetAZs]    # Get the first AZ in the list
       Tags:
       - Key: Name
         Value: Private Subnet 
@@ -218,7 +217,7 @@ Resources:
       VpcId: !Ref VPC
       CidrBlock: 10.0.6.0/24
       MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [ 1, !GetAZs ]    # Get the first AZ in the list        
+      AvailabilityZone: !Select [1, !GetAZs]    # Get the first AZ in the list
       Tags:
       - Key: Name
         Value: Public Subnet 2 
@@ -227,7 +226,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.4.0/23
-      AvailabilityZone: !Select [ 1, !GetAZs ]    # Get the second AZ in the list  
+      AvailabilityZone: !Select [1, !GetAZs]    # Get the second AZ in the list
       Tags:
       - Key: Name
         Value: Private Subnet 2

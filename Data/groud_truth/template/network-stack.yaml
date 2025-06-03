@@ -56,8 +56,8 @@ Resources:
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Join [ '' , [Security Group for , !Ref VPCName] ]
-      GroupName: !Join [ '' , [!Ref VPCName, -sg] ]
+      GroupDescription: !Join ['' , [Security Group for , !Ref VPCName]]
+      GroupName: !Join ['' , [!Ref VPCName, -sg]]
       VpcId: !Ref VPC
 
   SecurityGroupHTTPSRule:
@@ -322,6 +322,6 @@ Resources:
   ListenerArnSSM:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Join [ '' , [ /bpartners/, !Ref Env, /alb-https-listener-arn ] ]
+      Name: !Join ['' , [/bpartners/, !Ref Env, /alb-https-listener-arn]]
       Type: String
       Value: !GetAtt Listener.ListenerArn

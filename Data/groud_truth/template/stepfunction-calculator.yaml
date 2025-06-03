@@ -158,7 +158,7 @@ Resources:
         Statement: 
           Effect: Allow
           Principal:
-            Service: !Join [ "", [ "states.", !Ref "AWS::Region", ".amazonaws.com" ] ]
+            Service: !Join ["", ["states.", !Ref "AWS::Region", ".amazonaws.com"]]
           Action: "sts:AssumeRole"
 
   # This Policy is attached to the StepFunctionRole.

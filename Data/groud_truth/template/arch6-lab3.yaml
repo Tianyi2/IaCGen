@@ -30,7 +30,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.0.0/24
-      AvailabilityZone: !Select [ 0, !GetAZs ]    # Get the first AZ in the list        
+      AvailabilityZone: !Select [0, !GetAZs]    # Get the first AZ in the list
       Tags:
       - Key: Name
         Value: Public Subnet 
@@ -39,7 +39,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.2.0/23
-      AvailabilityZone: !Select [ 0, !GetAZs ]    # Get the first AZ in the list  
+      AvailabilityZone: !Select [0, !GetAZs]    # Get the first AZ in the list
       Tags:
       - Key: Name
         Value: Private Subnet 
@@ -103,7 +103,7 @@ Resources:
   WebServer:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: !FindInMap [ AmazonLinuxAMI, !Ref "AWS::Region", AMI]  # We lookup AMI in the region map
+      ImageId: !FindInMap [AmazonLinuxAMI, !Ref "AWS::Region", AMI]  # We lookup AMI in the region map
       InstanceType: t2.micro                                         # Any instance type will do
       IamInstanceProfile: !Ref EC2InstanceProfile
       NetworkInterfaces:

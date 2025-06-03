@@ -19,7 +19,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
       - Key: Name
-        Value: !Join [ "-", [ !Ref Pattern3VPC, "PublicSubnet1"]]
+        Value: !Join ["-", [!Ref Pattern3VPC, "PublicSubnet1"]]
       - Key: ResourceType
         Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
   
@@ -32,7 +32,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
       - Key: Name
-        Value: !Join [ "-", [ !Ref Pattern3VPC, "PublicSubnet2"]]
+        Value: !Join ["-", [!Ref Pattern3VPC, "PublicSubnet2"]]
       - Key: ResourceType
         Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
 
@@ -45,7 +45,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
       - Key: Name
-        Value: !Join [ "-", [ !Ref Pattern3VPC, "PrivateSubnet1"]]
+        Value: !Join ["-", [!Ref Pattern3VPC, "PrivateSubnet1"]]
       - Key: ResourceType
         Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
 
@@ -58,7 +58,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
       - Key: Name
-        Value: !Join [ "-", [ !Ref Pattern3VPC, "PrivateSubnet2"]]
+        Value: !Join ["-", [!Ref Pattern3VPC, "PrivateSubnet2"]]
       - Key: ResourceType
         Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
 
@@ -72,7 +72,7 @@ Resources:
     Properties:
       Tags:
       - Key: Name
-        Value: !Join [ "-", [ !Ref Pattern3VPC, "igw"]]
+        Value: !Join ["-", [!Ref Pattern3VPC, "igw"]]
       - Key: ResourceType
         Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
 
@@ -90,7 +90,7 @@ Resources:
       SubnetId: !Ref Pattern3PublicSubnet1
       Tags:
       - Key: Name
-        Value: !Join [ "-", [ !Ref Pattern3VPC, "nat"]]
+        Value: !Join ["-", [!Ref Pattern3VPC, "nat"]]
       - Key: ResourceType
         Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
 
@@ -101,7 +101,7 @@ Resources:
       Domain: vpc
       Tags:
       - Key: Name
-        Value: !Join [ "-", [ !Ref Pattern3VPC, "NatPublicIP"]]
+        Value: !Join ["-", [!Ref Pattern3VPC, "NatPublicIP"]]
       - Key: ResourceType
         Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
       
@@ -117,7 +117,7 @@ Resources:
         - Key: Network
           Value: Public
         - Key: Name
-          Value: !Join [ "-", [ !Ref Pattern3VPC, "PublicRouteTable1"]]
+          Value: !Join ["-", [!Ref Pattern3VPC, "PublicRouteTable1"]]
         - Key: ResourceType
           Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
   
@@ -129,7 +129,7 @@ Resources:
         - Key: Network
           Value: Public
         - Key: Name
-          Value: !Join [ "-", [ !Ref Pattern3VPC, "PublicRouteTable2"]]
+          Value: !Join ["-", [!Ref Pattern3VPC, "PublicRouteTable2"]]
         - Key: ResourceType
           Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
   
@@ -177,7 +177,7 @@ Resources:
         - Key: Network
           Value: Public
         - Key: Name
-          Value: !Join [ "-", [ !Ref Pattern3VPC, "PrivateRouteTable1"]]
+          Value: !Join ["-", [!Ref Pattern3VPC, "PrivateRouteTable1"]]
         - Key: ResourceType
           Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
   
@@ -189,7 +189,7 @@ Resources:
         - Key: Network
           Value: Public
         - Key: Name
-          Value: !Join [ "-", [ !Ref Pattern3VPC, "PrivateRouteTable2"]]
+          Value: !Join ["-", [!Ref Pattern3VPC, "PrivateRouteTable2"]]
         - Key: ResourceType
           Value: "ReInvent2020-SecurityTheWellArchitectedWay-Pattern3"
 

@@ -96,7 +96,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.200.10.0/24
-      AvailabilityZone: !Select [ 0, !GetAZs ]    # Get the first AZ in the list        
+      AvailabilityZone: !Select [0, !GetAZs]    # Get the first AZ in the list
       Tags:
       - Key: Name
         Value: Public Subnet 1
@@ -147,7 +147,7 @@ Resources:
   WebServer:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: !FindInMap [ AmazonLinuxAMI, !Ref "AWS::Region", AMI]  # Lookup the AMI in the region map
+      ImageId: !FindInMap [AmazonLinuxAMI, !Ref "AWS::Region", AMI]  # Lookup the AMI in the region map
       InstanceType: t2.small                                          # Any size is fine
       IamInstanceProfile: !Ref InstanceProf                           # Attach the role to allow S3 and Dynamo calls
       NetworkInterfaces:
