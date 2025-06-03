@@ -3,8 +3,8 @@ IaCGen is a LLM improvement framework in Infrastructure-as-Code (IaC) generation
 
 
 ## Project Structure
-You can check our benchmark dataset under the data folder.
-You can check the code for IaCGen framework under the code folder. 
+- You can check our benchmark dataset under the [Data](https://github.com/Tianyi2/IaCGen/tree/main/Data) folder.
+- You can check the code for IaCGen framework under the [Code](https://github.com/Tianyi2/IaCGen/tree/main/Code) folder. 
 
 
 ## Contribution
