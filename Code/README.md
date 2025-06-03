@@ -1,8 +1,12 @@
 ## Code Files
-1. main.py contains the backbone of IaCGen, while code from evaluation/cloud_evalution.py and generation/cloud_generation.py supports some features of IaCGen.
-2. ablation_study.py contains the code used for ablation study where conversation history feature is disabled.
-3. security.py contains the code we used to perform security validation.
-4. user_intent.py contains the code we used to perform user_intent validation.
+1. [main.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/main.py) contains the backbone of IaCGen.
+2. [ablation_study.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/ablation_study.py) contains the code used for ablation study where conversation history feature is disabled.
+3. [security.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/security.py) contains the code we used to perform security validation.
+4. [user_intent.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/user_intent.py) contains the code we used to perform user_intent validation.
+5. [evalualtion/cloud_evaluation.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/evaluation/cloud_evaluation.py) is the supporting code file which provide necessary functions for IaC template evaluation (yaml format, CloudFormation syntax, and live deployment).
+6. [generation](https://github.com/Tianyi2/IaCGen/tree/main/Code/generation) folder contains the necessary support such as `prompts` and functions to interact with LLMs. (Currently the [cloud_generation.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/generation/cloud_generation.py) is not used for IaCGen).
+
+
 
 
 ## Execute IaCGen
@@ -17,12 +21,9 @@ the type of feedback.
 5. **Note**: To perform the evaluation of LLMs on IaC, you can first run the main.py and run security.py or user_intent.py if you want to validate security and user intent aspects.
 
 
-## Other Code Files
-- [cloud_evaluation.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/evaluation/cloud_evaluation.py) is the supporting code file which provide necessary functions for IaC template evaluation (yaml format, CloudFormation syntax, and live deployment).
-- [generation](https://github.com/Tianyi2/IaCGen/tree/main/Code/generation) folder contains the necessary support such as `prompts` and functions to interact with LLMs. (Currently the [cloud_generation.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/generation/cloud_generation.py) is not used for IaCGen.
-
 
 ## Prompts
+You can check the prompt in [prompt_for_cloud.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/generation/prompts/prompt_for_cloud.py) and below.
 ### System Prompt
 ```
 You are an expert in AWS CloudFormation template generation. Your task is to generate and improve templates based on feedback. Please write your complete CloudFormation YAML template inside <iac_template></iac_template> tags.
