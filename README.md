@@ -23,5 +23,5 @@ We welcome all forms of contribution! We aim to quantitatively and comprehensive
 
 
 ## Acknowledgments
-A huge respect goes to the first benchmark (Terraform focus) in the field: [IaC-Eval](https://github.com/autoiac-project/iac-eval)
+[IaC-Eval](https://github.com/autoiac-project/iac-eval)
 
