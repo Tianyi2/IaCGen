@@ -1,4 +1,3 @@
----
 AWSTemplateFormatVersion: '2010-09-09'
 
 # This demo creates and tags some EC2 instances for targets for Systems Manager
@@ -6,13 +5,10 @@ AWSTemplateFormatVersion: '2010-09-09'
 
 
 Parameters:
-
   WindowsAMI:
     Type:  AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-windows-latest/Windows_Server-2016-English-Full-Base
     Description: You probably won't need to change this value.  This is looking up the latest Windows AMI using the Parameter Store...
-
-
 
 Resources:
   # First, A VPC:
@@ -43,7 +39,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.1.10.0/24
-      AvailabilityZone: !Select [ 0, !GetAZs ]    # Get the first AZ in the list   
+      AvailabilityZone: !Select [0, !GetAZs]    # Get the first AZ in the list
       MapPublicIpOnLaunch: true     
       Tags:
       - Key: Name
@@ -53,7 +49,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.1.20.0/24
-      AvailabilityZone: !Join [ "", [ !Ref "AWS::Region", b]] 
+      AvailabilityZone: !Join ["", [!Ref "AWS::Region", b]]
       MapPublicIpOnLaunch: true     
       Tags:
       - Key: Name
@@ -119,7 +115,7 @@ Resources:
           Name:  !Ref SSMInstanceProfile     # Allows EC2 Instance to talk with SSM
         NetworkInterfaces:
         - DeviceIndex: 0
-          Groups: [ !Ref WebServerSecurityGroup ]   # Plug in the security group.
+          Groups: [!Ref WebServerSecurityGroup]   # Plug in the security group.
         UserData:      
           Fn::Base64: |
             #!/bin/bash 
@@ -139,7 +135,7 @@ Resources:
           Name:  !Ref SSMInstanceProfile     # Allows EC2 Instance to talk with SSM
         NetworkInterfaces:
         - DeviceIndex: 0
-          Groups: [ !Ref WebServerSecurityGroup ]   # Plug in the security group.
+          Groups: [!Ref WebServerSecurityGroup]   # Plug in the security group.
 
 
   AutoScalingGroup:
@@ -190,7 +186,7 @@ Resources:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
-      Roles: [ !Ref SSMRole]
+      Roles: [!Ref SSMRole]
 
   # Allow EC2 instance to make calls to SSM.
   SSMRole:

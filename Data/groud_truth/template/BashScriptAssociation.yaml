@@ -75,7 +75,7 @@ Resources:
       # in CloudFormation
       Targets:
         - Key: InstanceIds
-          Values: [ !Ref EC2Instance ]
+          Values: [!Ref EC2Instance]
       # The passing in the S3 Bucket that is created in the template that logs will be sent to
       OutputLocation:
         S3Location: 

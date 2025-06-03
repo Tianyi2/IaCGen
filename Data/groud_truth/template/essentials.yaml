@@ -7,7 +7,7 @@ Resources:
     Metadata:
       cfn-lint:
         config:
-          ignore_checks: [ "W3045" ]
+          ignore_checks: ["W3045"]
     DeletionPolicy: Delete
     Properties:
       PublicAccessBlockConfiguration:
