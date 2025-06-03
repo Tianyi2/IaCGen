@@ -1,5 +1,5 @@
-
-# Re-creates a simpler version of lab 3 from Advanced Developer, without CDK or Cloud9.
+AWSTemplateFormatVersion: '2010-09-09'
+# This is created from Advanced Developer, without CDK or Cloud9.
 # Upload photos into the resulting S3 bucket and it will tell you if it contains a human or not.
 # There is an interesting circular-relationship between the bucket and the lambda it fires:
 #   1. To fire the lambda, the bucket must have an event notification defined on it.
@@ -137,7 +137,7 @@ Resources:
       # If we point to the UploadBucket.Arn, but bucket will be build first, 
       # but it can't because it's notification will be invalid, error is: 
       # "Unable to validate the following destination configurations"
-    #  SourceArn: !GetAtt UploadBucket.Arn
+      #  SourceArn: !GetAtt UploadBucket.Arn
       SourceArn: !Sub "arn:aws:s3:::*"  # Intentially loose to get around the circular reference problem.
       
 
@@ -282,7 +282,6 @@ Resources:
       RoleArn: !GetAtt StateMachineRole.Arn
 
 Outputs:
-
   TheUploadBucket:
     Description:  URL of the S3 Bucket you can upload images to.  If images contain a human you should be notified.
     Value: !Ref UploadBucket  
