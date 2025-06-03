@@ -1,5 +1,7 @@
 # IaCGen---First edition
-IaCGen is a LLM improvement framework in Infrastructure-as-Code (IaC) generation.
+`IaCGen` is a LLM improvement framework in Infrastructure-as-Code (IaC) generation.
+
+`DPIaC-Eval` is the first deployablility-focused IaC benchmark that focuses on CloudFormation and AWS.
 
 
 ## Installation
@@ -12,8 +14,8 @@ IaCGen is a LLM improvement framework in Infrastructure-as-Code (IaC) generation
 
 
 ## Project Structure
-- You can check our benchmark dataset under the [Data](https://github.com/Tianyi2/IaCGen/tree/main/Data) folder.
-- You can check the code for IaCGen framework under the [Code](https://github.com/Tianyi2/IaCGen/tree/main/Code) folder. 
+- You can check our `benchmark (DPIaC-Eval)` dataset under the [Data](https://github.com/Tianyi2/IaCGen/tree/main/Data) folder.
+- You can check the `code for IaCGen` framework under the [Code](https://github.com/Tianyi2/IaCGen/tree/main/Code) folder. 
 - **Note**: Please check the README.md file in each of the folders for a detailed description.
 - **Note**: You can simply download the project and run the [main.py](https://github.com/Tianyi2/IaCGen/blob/main/Code/main.py) in [Data](https://github.com/Tianyi2/IaCGen/tree/main/Data) folder to test IaCGen. You can edit the variables in the last part of the Python file to control how you want to use IaCGen, such as the type of model and which IaC problem/s you want to test with. 
 
