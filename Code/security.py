@@ -180,7 +180,9 @@ def process_security_validation_with_checkov(input_csv: str, output_csv: str, st
 
 # Start
 if __name__ == "__main__":
-    input_csv = "Result/iterative_claude-3-7-sonnet-20250219_results.csv"
+    # You only need to change input_csv before run the file. Note you should ensure you ran main.py before this step
+    input_csv = "Result/iterative_claude-3-7-sonnet-20250219_results.csv"   
+
     llm_model = input_csv.split("_")[1]
     output_csv = f"Result/security/security_{llm_model}_results.csv"
     start_row = 0
