@@ -1,17 +1,22 @@
-import sys
 import os
-from openai import OpenAI
 import anthropic
-
-# Add the directory containing my_configs to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 import pandas as pd
 import google.generativeai as genai
-from generation.prompts.prompt_for_cloud import TEMPLATE_GENERATE_PROMPT, SYSMTE_TEMPLATE_GENERATE_PROMPT, GPT_TEMPLATE_GENERATE_HELPER_PROMPT, TOP_PROMPT, BOTTOM_PROMPT
-from my_configs.config import GEMIN_API_KEY, CHATGPT_API_KEY, CLAUDE_API_KEY, DEEPSEEK_API_KEY
+from openai import OpenAI
+from dotenv import load_dotenv
+from generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT
 
-OUTPUT_PATH = "llm_generated_data/template/"
+
+# Load environment variables from .env file
+load_dotenv()
+
+GEMIN_API_KEY = os.getenv('GEMIN_API_KEY', '')
+CHATGPT_API_KEY = os.getenv('CHATGPT_API_KEY', '')
+CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY', '')
+DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '')
+
+
+OUTPUT_PATH = "Result/llm_generated_data/template/"
 
 
 def gemini_generate_cf_template(model, prompt, output_path=OUTPUT_PATH):  
@@ -229,7 +234,7 @@ def process_ioc_csv(input_csv, output_csv, model, llm_type, llm_model):
 
 def start_generation():
     # Configuration Variables:
-    input_csv = "dataset/ioc.csv"
+    input_csv = "Data/iac.csv"
     llm_type = "claude"  # "gemini", "gpt" or "claude"
     llm_model = "claude-3-5-sonnet-20241022"  # [gemini-1.5-flash, gpt-4o-mini, claude-3-5-sonnet-20241022, gpt-4o, deepseek]
     output_csv = f"result/result_{llm_type}.csv"

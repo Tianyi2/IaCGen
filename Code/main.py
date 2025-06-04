@@ -1,11 +1,11 @@
 import sys
 import os
-from datetime import datetime
 import pandas as pd
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+import anthropic
+import google.generativeai as genai
+from openai import OpenAI
+from dotenv import load_dotenv
+from datetime import datetime
 from generation.cloud_generation import (
     gemini_generate_cf_template,
     chatgpt_generate_cf_template,
@@ -17,13 +17,16 @@ from evaluation.cloud_evaluation import (
     evaluate_template_deployment,
     analyze_resource_coverage
 )
-from Config.configs import GEMIN_API_KEY, CHATGPT_API_KEY, CLAUDE_API_KEY, DEEPSEEK_API_KEY
-from generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT, SYSTEM_PROMPT, FORMATE_SYSTEM_PROMPT
+from generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT, FORMATE_SYSTEM_PROMPT
 
-# Import necessary LLM libraries
-import google.generativeai as genai
-from openai import OpenAI
-import anthropic
+# Load environment variables from .env file
+load_dotenv()
+
+GEMIN_API_KEY = os.getenv('GEMIN_API_KEY', '')
+CHATGPT_API_KEY = os.getenv('CHATGPT_API_KEY', '')
+CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY', '')
+DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '')
+
 
 class IterativeTemplateGenerator:
     YAML_STAGE_NAME = 'yaml_validation'
@@ -683,6 +686,9 @@ def process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=0, end
     except Exception as e:
         print(f"Fail at {index}. Reason: {e}.")
     finally:
+        # Create the directory for output_csv if it doesn't exist
+        os.makedirs(os.path.dirname(output_csv), exist_ok=True)
+
         if os.path.exists(output_csv):
             existing_df = pd.read_csv(output_csv)
             results_df = pd.DataFrame(results)
@@ -692,16 +698,17 @@ def process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=0, end
             pd.DataFrame(results).to_csv(output_csv, index=False)
         # Generate error history CSV
         error_csv_path = f"result/error_tracking/{llm_model}_error_history.csv"
+        os.makedirs(os.path.dirname(error_csv_path), exist_ok=True)
         IterativeTemplateGenerator.generate_error_history_csv(error_csv_path)
 
 
 # Start
 if __name__ == "__main__":
     print("IaCGen Starting")
-    input_csv = "dataset/iac.csv"
+    input_csv = "Data/iac.csv"
     llm_type = "claude"  # "gemini", "gpt", "claude", or "deepseek"
     llm_model = "claude-3-7-sonnet-20250219"  # [gemini-1.5-flash, gpt-4o, o3-mini, o1, claude-3-5-sonnet-20241022, claude-3-7-sonnet-20250219, deepseek-chat [V3], deepseek-reasoner [R1]]
-    output_csv = f"result/iterative_{llm_model}_results.csv"
+    output_csv = f"Result/iterative_{llm_model}_results.csv"
     start_row = 0
     end_row = 153
 

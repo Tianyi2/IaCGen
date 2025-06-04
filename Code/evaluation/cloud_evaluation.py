@@ -82,7 +82,7 @@ def get_required_resource_types(template_path):
     return types
 
 
-# Useful - Yaml Syntax Xorrectness
+# Useful - Yaml Syntax Correctness
 def yaml_syntax_validation(template_path):
     """
     Validate YAML syntax using yamllint.
@@ -451,41 +451,18 @@ def evaluate_templates_from_csv(csv_input_path, csv_output_path, llm_type):
 
 
 # Main Function
-def start_evaluation():
-    input_csv = "dataset/ioc.csv"
-    output_csv = "result/claude.csv"
+def main():
+    # This function is used to evaluate all LLM generated template with template file path in a CSV file.
+    input_csv = "Data/iac.csv"
+    output_csv = "Result/claude.csv"
     llm_type = "claude"   # gemini, gpt, claude
     results = evaluate_templates_from_csv(input_csv, output_csv, llm_type)
     print(f"Evaluation completed. Results saved to {output_csv}")
 
 
 if __name__ == "__main__":
-    # Calling & Testing
-    print("Test")
-    start_evaluation()
-    # result = evaluate_template_with_linter(r"llm_generated_data\template\iterative\gemini_update_1_template_20250119_192741.yaml.yaml")
-    # if not result['passed']:
-    #     for error in result['error_details']:
-    #         print(f"Resource: {error['resource']}")
-    #         print(f"Error: {error['message']}")
-    #         print(f"At line: {error['line_number']}")
-    #         print(f"Description: {error['rule_description']}")
-    #         print(f"More info: {error['documentation']}\n")
-    print("End Test")
+    print("Start Evaluation")
+    main()
+    print("End Evaluation")
 
-    # Example usage evaluate_template_with_linter
-    # print(evaluate_template_with_linter(r"templates\template_20250107_052901.yaml"))
-    # print(evaluate_template_with_linter(r"template\EC2_Instance_With_Ephemeral_Drives.yaml"))
 
-    # count_resources
-    # print(count_resources(r"template\EC2InstanceWithSecurityGroupSample.json"))
-
-    # get_required_resource_types
-    # print(get_required_resource_types(r"groud_truth\template\EC2InstanceWithSecurityGroupSample.yaml"))
-
-    # analyze_resource_coverage
-    # print(analyze_resource_coverage(r"template\EC2InstanceWithSecurityGroupSample.json", r"templates\template_20250107_052901.yaml"))
-
-    # print(evaluate_template_deployment(r"llm_generated_data\template\gemini\template_20250107_052901.yaml"))
-    # print(evaluate_template_deployment(r"groud_truth\template\EC2InstanceWithSecurityGroupSample.yaml"))
-    # ToDo: Ground truth template dun work!

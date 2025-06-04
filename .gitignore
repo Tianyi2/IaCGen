@@ -1,3 +1,12 @@
+# Environments
 .idea
-
+.env
 venv
+
+# Local working python script
+test.py
+
+# Result files
+llm_generated_data
+result
+Result

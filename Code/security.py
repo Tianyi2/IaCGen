@@ -180,12 +180,11 @@ def process_security_validation_with_checkov(input_csv: str, output_csv: str, st
 def start_checkov_validation():
     input_csv = "result/iterative_claude-3-7-sonnet-20250219_results.csv"
     model_name = input_csv.split("_")[1]
-    output_csv = f"result/security/security_{model_name}_results.csv"
-    start_row = 52 # 52
-    end_row = 143 #143
+    output_csv = f"Result/security/security_{model_name}_results.csv"
+    start_row = 0
+    end_row = 153
         
-    # process_security_validation_with_checkov(input_csv, output_csv, start_row, end_row)
-    process_security_validation_with_checkov(input_csv, output_csv, 137, 138)
+    process_security_validation_with_checkov(input_csv, output_csv, start_row, end_row)
 
 
 # Start
