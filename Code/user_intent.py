@@ -266,12 +266,22 @@ def process_templates(result_csv_path, iac_user_intent_csv_path, output_csv_path
 
 
 if __name__ == "__main__":
-    IAC_USER_INTENT_CSV_PATH = "Data/iac_user_intent.csv"
+    # IAC_USER_INTENT_CSV_PATH = "Data/iac_user_intent.csv"
 
-    llm_model = "claude-3-7-sonnet-20250219"   # You only need to change this before run the file. Note you should ensure you ran main.py with this llm model.
-    result_csv_path = f"Result/iterative_{llm_model}_results.csv"
-    output_csv_path = f"Result/user_intent/user_intent_{llm_model}_results.csv"
+    # llm_model = "claude-3-7-sonnet-20250219"   # You only need to change this before run the file. Note you should ensure you ran main.py with this llm model.
+    # result_csv_path = f"Result/iterative_{llm_model}_results.csv"
+    # output_csv_path = f"Result/user_intent/user_intent_{llm_model}_results.csv"
 
-    print("Start Checkov Validation")
-    process_templates(result_csv_path, IAC_USER_INTENT_CSV_PATH, output_csv_path)
-    print("End Checkov Validation")
+    # print("Start Checkov Validation")
+    # process_templates(result_csv_path, IAC_USER_INTENT_CSV_PATH, output_csv_path)
+    # print("End Checkov Validation")
+
+    template_path = "Data/groud_truth/template/stepfunction-recognition.yaml"
+    user_intent_files = ["Data/user_intent/row_141C.yaml"]
+    user_intent_ids = ["UIV_CUSTOM_ROW_141C"]
+    checkov_result = validate_with_checkov_package(
+                template_path=template_path,
+                user_intent_files=user_intent_files,
+                user_intent_ids=user_intent_ids
+    )
+    print(checkov_result)
