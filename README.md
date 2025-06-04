@@ -5,19 +5,22 @@
 
 
 ## Installation
-1. [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [setup credentials](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html)
-2. Download required libraries in the [requirement.txt](https://github.com/Tianyi2/IaCGen/blob/main/requirements.txt)
-3. *Obtain the following LLM model inference API keys as appropriate, depending on which of our currently supported models you want to perform evaluation on:
+1. Download the project
+2. [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [setup credentials](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html)
+3. Download required libraries in the [requirement.txt](https://github.com/Tianyi2/IaCGen/blob/main/requirements.txt)
+4. *Obtain the following LLM model inference API keys as appropriate, depending on which of our currently supported models you want to perform evaluation on:
 - [OpenAI API](https://platform.openai.com/docs/quickstart/account-setup): for GPT-4o and o3-mini
 - [Anthropic API](https://console.anthropic.com/): for Claude-3-5-Sonnet and Claude-3-7-Sonnet
 - [DeepSeek API](https://platform.deepseek.com/): for DeepSeek-R1 and DeepSeek-S3
-4. Add a `.env` file under the `IaCGen` directory with your own API key:
+5. Add a `.env` file under the `IaCGen` directory with your own API key:
 ```
 GEMIN_API_KEY=your_actual_gemini_api_key_here
 CHATGPT_API_KEY=your_actual_gpt_api_key_here
 CLAUDE_API_KEY=your_actual_claude_api_key_here
 DEEPSEEK_API_KEY=your_actual_deepseek_api_key_here
 ```
+6. Follow the instructions in [Code/README.md](https://github.com/Tianyi2/IaCGen/tree/main/Code) to execute the IaCGen.
+
 
 ## Project Structure
 - You can check our `benchmark (DPIaC-Eval)` dataset under the [Data](https://github.com/Tianyi2/IaCGen/tree/main/Data) folder.
