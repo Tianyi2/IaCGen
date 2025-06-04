@@ -686,6 +686,9 @@ def process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=0, end
     except Exception as e:
         print(f"Fail at {index}. Reason: {e}.")
     finally:
+        # Create the directory for output_csv if it doesn't exist
+        os.makedirs(os.path.dirname(output_csv), exist_ok=True)
+
         if os.path.exists(output_csv):
             existing_df = pd.read_csv(output_csv)
             results_df = pd.DataFrame(results)
@@ -694,19 +697,20 @@ def process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=0, end
         else:
             pd.DataFrame(results).to_csv(output_csv, index=False)
         # Generate error history CSV
-        error_csv_path = f"result/ablation_study/{llm_model}_error_history.csv"
+        error_csv_path = f"Result/ablation_study/{llm_model}_error_history.csv"
+        os.makedirs(os.path.dirname(error_csv_path), exist_ok=True)
         IterativeTemplateGenerator.generate_error_history_csv(error_csv_path)
 
 
 # Start
 if __name__ == "__main__":
-    llm_type = "claude"  # "gemini", "gpt", "claude", or "deepseek"
-    llm_model = "claude-3-7-sonnet-20250219"  # [gemini-1.5-flash, gpt-4o, o3-mini, o1, claude-3-5-sonnet-20241022, claude-3-7-sonnet-20250219, deepseek-chat [V3], deepseek-reasoner [R1]]
+    llm_type = "gpt"  # "gemini", "gpt", "claude", or "deepseek"
+    llm_model = "gpt-4o"  # [gemini-1.5-flash, gpt-4o, o3-mini, o1, claude-3-5-sonnet-20241022, claude-3-7-sonnet-20250219, deepseek-chat [V3], deepseek-reasoner [R1]]
 
     input_csv = "Data/iac.csv"
     output_csv = f"Result/ablation_study/iterative_{llm_model}_results.csv"
     start_row = 0
-    end_row = 153
+    end_row = 1
     print("IaCGen Starting - Ablation Study without conversation history")
     print(f"Starting iterative generation with {llm_type} model")
     process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=start_row, end_row=end_row)

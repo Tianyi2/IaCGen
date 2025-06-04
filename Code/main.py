@@ -686,6 +686,9 @@ def process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=0, end
     except Exception as e:
         print(f"Fail at {index}. Reason: {e}.")
     finally:
+        # Create the directory for output_csv if it doesn't exist
+        os.makedirs(os.path.dirname(output_csv), exist_ok=True)
+
         if os.path.exists(output_csv):
             existing_df = pd.read_csv(output_csv)
             results_df = pd.DataFrame(results)
@@ -695,6 +698,7 @@ def process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=0, end
             pd.DataFrame(results).to_csv(output_csv, index=False)
         # Generate error history CSV
         error_csv_path = f"result/error_tracking/{llm_model}_error_history.csv"
+        os.makedirs(os.path.dirname(error_csv_path), exist_ok=True)
         IterativeTemplateGenerator.generate_error_history_csv(error_csv_path)
 
 
