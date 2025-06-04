@@ -5,9 +5,9 @@
 4. [iac_with_user_intent.csv](https://github.com/Tianyi2/IaCGen/blob/main/Data/iac_with_user_intent.csv) is the benchmark with necessary information for the user intent validation.
 
 
-### process_iac.csv
-- process_iac.csv is generated after running the [process_dataset.py](https://github.com/Tianyi2/IaCGen/blob/main/Data/process_dataset.py) which takes the iac.csv as input.
-- process_iac.csv include additional information:
+### iac_with_difficulty_levels.csv
+- iac_with_difficulty_levels.csv is generated after running the [process_dataset.py](https://github.com/Tianyi2/IaCGen/blob/main/Data/process_dataset.py) which takes the iac_basic.csv as input.
+- iac_with_difficulty_levels.csv include additional information:
   - `difficulty_level`: (1~5) difficulty level as discussed in the paper.
   - `resources`: All AWS resource names included in the template.
   - `resource_count`: Number of AWS resources included in the template.
@@ -15,8 +15,8 @@
   - `parameter_count`: Number of parameters included in the template.
 
 
-### iac_user_intent.csv
-- iac_user_intent.csv is built upon the process_iac.csv file by adding the information for user intent validation:
+### iac_with_user_intent.csv
+- iac_with_user_intent.csv is built upon the iac_with_difficulty_levels.csv file by adding the information for user intent validation:
   - `user_intent_file_path`: List of user intent specification file pathes that will be used to validate against the LLM-generated IaC.
   - `user_intent_id`: Id of user intent specification files.
   - `needed_resources`: List of needed AWS resources for the IaC template.  
