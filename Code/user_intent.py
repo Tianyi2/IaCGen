@@ -216,31 +216,25 @@ def process_templates(result_csv_path, iac_user_intent_csv_path, output_csv_path
         
         # Process each row
         for _, row in iac_df.iterrows():   # row 2
+            print(row['row_number'])
             row_number = row['row_number']
-            # print(row_number)
-            
-            if row_number == 2:
-                continue
+
+            try:   # Handle the case where the result file is empty or partially completed
+                template_path = result_df.loc[row_number, 'final_template_path']
+            except Exception as e:
+                print(f"Row {row_number} has no template path")
+                break
 
             ground_truth_path = row['ground_truth_path']
             user_intent_files = row['user_intent_file_path'].split(', ') if pd.notna(row['user_intent_file_path']) else None
             user_intent_ids = row['user_intent_id'].split(', ') if pd.notna(row['user_intent_id']) else None
             
-            # Get the template path from result_df using row_number
-            template_path = result_df.loc[row_number, 'final_template_path']
-
-            print(template_path)
-
             # Validate with Checkov
             checkov_result = validate_with_checkov_package(
                 template_path=template_path,
                 user_intent_files=user_intent_files,
                 user_intent_ids=user_intent_ids
             )
-
-            # print(user_intent_files)
-
-            # print(checkov_result['pass_user_intent'] if checkov_result['pass_user_intent'] != None else checkov_result)
             
             # Analyze resource coverage
             coverage_result = analyze_resource_coverage(ground_truth_path, template_path)
@@ -257,15 +251,13 @@ def process_templates(result_csv_path, iac_user_intent_csv_path, output_csv_path
                 'resource_details': coverage_result['resource_details'],
                 'missing_resources': coverage_result['resource_details']['missing'],
             }
-            
             results.append(result)
         
         # Create DataFrame from results
         results_df = pd.DataFrame(results)
         
-        # print(results)
-
         # Save results to CSV
+        os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
         results_df.to_csv(output_csv_path, index=False)
         print(f"Results saved to {output_csv_path}")
         
@@ -276,9 +268,9 @@ def process_templates(result_csv_path, iac_user_intent_csv_path, output_csv_path
 if __name__ == "__main__":
     IAC_USER_INTENT_CSV_PATH = "Data/iac_user_intent.csv"
 
-    llm_model = "claude-3-7-sonnet-20250219"
+    llm_model = "claude-3-7-sonnet-20250219"   # You only need to change this before run the file. Note you should ensure you ran main.py with this llm model.
     result_csv_path = f"Result/iterative_{llm_model}_results.csv"
-    output_csv_path = f"Result/user_intent/temp/user_intent_{llm_model}_results.csv"
+    output_csv_path = f"Result/user_intent/user_intent_{llm_model}_results.csv"
 
     print("Start Checkov Validation")
     process_templates(result_csv_path, IAC_USER_INTENT_CSV_PATH, output_csv_path)
