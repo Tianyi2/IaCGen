@@ -1,0 +1,25 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_5"
+  name: "user intent for row 5"
+  category: "USER_INTENT"
+
+definition:
+  and: 
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "AttributeDefinitions.*.AttributeName"
+      operator: "contains"
+      value: "ArtistId"
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "AttributeDefinitions.*.AttributeName"
+      operator: "contains"
+      value: "Concert"
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "AttributeDefinitions.*.AttributeName"
+      operator: "contains"
+      value: "TicketSales"

@@ -1,0 +1,47 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_131A"
+  name: "user intent for row 131A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::CloudWatch::Alarm"
+      attribute: "MetricName"
+      operator: "contains"
+      value: "NumberOfNotificationsFailed"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::CloudWatch::Alarm"
+      attribute: "Namespace"
+      operator: "contains"
+      value: "AWS/SNS"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::CloudWatch::Alarm"
+      attribute: "ComparisonOperator"
+      operator: "contains"
+      value: "GreaterThanThreshold"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::CloudWatch::Alarm"
+      attribute: "TreatMissingData"
+      operator: "contains"
+      value: "notBreaching"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::CloudWatch::Alarm"
+      attribute: "AlarmActions"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::CloudWatch::Alarm"
+      attribute: "Dimensions"
+      operator: "exists"
+    

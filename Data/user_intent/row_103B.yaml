@@ -1,0 +1,36 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_103B"
+  name: "user intent for row 103B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::S3::Bucket"
+      attribute: "PublicAccessBlockConfiguration.BlockPublicAcls"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::S3::Bucket"
+      attribute: "PublicAccessBlockConfiguration.BlockPublicPolicy"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::S3::Bucket"
+      attribute: "PublicAccessBlockConfiguration.IgnorePublicAcls"
+      operator: "is_true" 
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::S3::Bucket"
+      attribute: "PublicAccessBlockConfiguration.RestrictPublicBuckets"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::S3::Bucket"
+      attribute: "BucketEncryption.ServerSideEncryptionConfiguration"
+      operator: "exists"

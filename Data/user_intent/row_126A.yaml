@@ -1,0 +1,16 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_126A"
+  name: "user intent for row 126A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Kinesis::Stream"
+      attribute: "ShardCount"
+      operator: "greater_than_or_equal"
+      value: 1
+
+
+

@@ -1,0 +1,18 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_7A"
+  name: "user intent for row 7"
+  category: "USER_INTENT"
+
+definition:
+  and: 
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "InstanceType"
+      operator: "equals"
+      value: "t3.micro"
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "SecurityGroupIds"
+      operator: "exists"

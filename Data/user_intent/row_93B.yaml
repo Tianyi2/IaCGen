@@ -1,0 +1,26 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_93B"
+  name: "user intent for row 93B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::SSM::Association"
+      attribute: "Parameters.commands"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::SSM::Association"
+      attribute: "OutputLocation.S3Location"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::SSM::Association"
+      attribute: "Targets.Key"
+      operator: "exists"
+
+

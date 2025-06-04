@@ -1,0 +1,12 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_78A"
+  name: "user intent for row 78A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::IPAM"
+      attribute: "Description"
+      operator: "exists"

@@ -1,0 +1,22 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_141B"
+  name: "user intent for row 141B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Events::Rule"
+      attribute: "EventPattern.source"
+      operator: "contains"
+      value: "aws.s3"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Events::Rule"
+      attribute: "EventPattern.detail-type"
+      operator: "contains"
+      value: "Object Created"
+
+    

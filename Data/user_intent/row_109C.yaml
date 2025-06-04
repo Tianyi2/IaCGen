@@ -1,0 +1,17 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_109C"
+  name: "user intent for row 109C"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Events::Rule"
+      attribute: "State"
+      operator: "equals"
+      value: "ENABLED"
+
+
+
+

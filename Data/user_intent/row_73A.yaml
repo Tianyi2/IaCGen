@@ -1,0 +1,21 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_73A"
+  name: "user intent for row 73A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ECS::Cluster"
+      attribute: "CapacityProviders"
+      operator: "contains"
+      value: "FARGATE"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ECS::Cluster"
+      attribute: "CapacityProviders"
+      operator: "contains"
+      value: "FARGATE_SPOT"
+

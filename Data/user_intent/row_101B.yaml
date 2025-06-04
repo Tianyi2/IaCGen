@@ -1,0 +1,34 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_101B"
+  name: "user intent for row 101B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::FlowLog"
+      attribute: "LogDestinationType"
+      operator: "equals"
+      value: "s3"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::FlowLog"
+      attribute: "ResourceType"
+      operator: "equals"
+      value: "VPC"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::FlowLog"
+      attribute: "TrafficType"
+      operator: "equals"
+      value: "ALL"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::FlowLog"
+      attribute: "MaxAggregationInterval"
+      operator: "equals"
+      value: "600"

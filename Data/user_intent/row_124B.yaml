@@ -1,0 +1,22 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_124B"
+  name: "user intent for row 124B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "HttpMethod"
+      operator: "within"
+      value: 
+        - "POST"
+        - "GET"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "ApiKeyRequired"
+      operator: "is_true"
+

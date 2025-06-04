@@ -1,0 +1,32 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_35C"
+  name: "user intent for row 35C"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::RDS::DBInstance"
+      attribute: "DBInstanceClass"
+      operator: "equals"
+      value: "db.t3.micro"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::RDS::DBInstance"
+      attribute: "PubliclyAccessible"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::RDS::DBInstance"
+      attribute: "MultiAZ"
+      operator: "is_false"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::RDS::DBInstance"
+      attribute: "AutoMinorVersionUpgrade"
+      operator: "is_true"
+

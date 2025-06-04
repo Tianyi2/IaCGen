@@ -1,0 +1,15 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_31C"
+  name: "user intent for row 31C"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::AutoScaling::AutoScalingGroup"
+      attribute: "VPCZoneIdentifier"
+      operator: "length_equals"
+      value: "2"
+
+

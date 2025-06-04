@@ -1,0 +1,12 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_106A"
+  name: "user intent for row 106A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::S3::Bucket"
+      attribute: "NotificationConfiguration.TopicConfigurations"
+      operator: "exists"

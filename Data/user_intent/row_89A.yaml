@@ -1,0 +1,20 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_89A"
+  name: "user intent for row 89A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::SecurityHub::Hub"
+      attribute: "EnableDefaultStandards"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::VPC"
+      attribute: "ControlFindingGenerator"
+      operator: "exists"
+
+

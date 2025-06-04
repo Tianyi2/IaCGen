@@ -1,0 +1,33 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_11"
+  name: "user intent for row 11"
+  category: "USER_INTENT"
+
+definition:
+  and: 
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "GlobalSecondaryIndexes.KeySchema.*.AttributeName"
+      operator: "contains"
+      value: "type"
+    
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "GlobalSecondaryIndexes.KeySchema.*.AttributeName"
+      operator: "contains"
+      value: "sentTime"
+    
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "BillingMode"
+      operator: "equals"
+      value: "PAY_PER_REQUEST"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "TimeToLiveSpecification.Enabled"
+      operator: "is_true"

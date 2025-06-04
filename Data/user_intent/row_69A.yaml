@@ -1,0 +1,19 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_69A"
+  name: "user intent for row 69A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "BillingMode"
+      operator: "equals"
+      value: "PAY_PER_REQUEST"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "DeletionProtectionEnabled"
+      operator: "is_true"

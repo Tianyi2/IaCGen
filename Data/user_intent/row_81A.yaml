@@ -1,0 +1,15 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_81A"
+  name: "user intent for row 81A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ResourceGroups::Group"
+      attribute: "ResourceQuery.Type"
+      operator: "equals"
+      value: "TAG_FILTERS_1_0"
+
+

@@ -1,0 +1,14 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_52C"
+  name: "user intent for row 52C"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Route53::HealthCheck"
+      attribute: "HealthCheckConfig.Type"
+      operator: "equals"
+      value: "RECOVERY_CONTROL"
+

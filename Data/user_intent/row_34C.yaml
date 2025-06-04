@@ -1,0 +1,21 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_34C"
+  name: "user intent for row 34C"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::SecurityGroup"
+      attribute: "SecurityGroupIngress.IpProtocol"
+      operator: "contains"
+      value: "tcp"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::SecurityGroup"
+      attribute: "SecurityGroupIngress.FromPort"
+      operator: "equals"
+      value: 3306
+

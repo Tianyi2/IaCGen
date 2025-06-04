@@ -17,3 +17,6 @@ google-generativeai>=0.5.0
 
 # Environment variable management
 python-dotenv>=1.0.0
+
+# Security and compliance scanning
+checkov>=3.0.0

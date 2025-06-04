@@ -1,0 +1,48 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_120A"
+  name: "user intent for row 120A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::ComputeEnvironment"
+      attribute: "Type"
+      operator: "equals"
+      value: "MANAGED"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::ComputeEnvironment"
+      attribute: "State"
+      operator: "equals"
+      value: "ENABLED"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::ComputeEnvironment"
+      attribute: "ServiceRole"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::ComputeEnvironment"
+      attribute: "ComputeResources.Type"
+      operator: "equals"
+      value: "FARGATE"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::ComputeEnvironment"
+      attribute: "ComputeResources.Subnets"
+      operator: "greater_than_or_equal"
+      value: 2
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::ComputeEnvironment"
+      attribute: "ComputeResources.SecurityGroupIds"
+      operator: "exists"
+
+

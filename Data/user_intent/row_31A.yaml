@@ -1,0 +1,12 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_31A"
+  name: "user intent for row 31A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::VPC"
+      attribute: "EnableDnsHostnames"
+      operator: "is_true"

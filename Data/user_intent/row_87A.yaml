@@ -1,0 +1,34 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_87A"
+  name: "user intent for row 87A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::S3::Bucket"
+      attribute: "PublicAccessBlockConfiguration.BlockPublicAcls"
+      operator: "is_false"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::S3::Bucket"
+      attribute: "PublicAccessBlockConfiguration.BlockPublicPolicy"
+      operator: "is_false"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::S3::Bucket"
+      attribute: "PublicAccessBlockConfiguration.IgnorePublicAcls"
+      operator: "is_false"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::S3::Bucket"
+      attribute: "PublicAccessBlockConfiguration.RestrictPublicBuckets"
+      operator: "is_false"
+
+
+
+

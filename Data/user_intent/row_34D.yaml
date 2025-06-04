@@ -1,0 +1,33 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_34D"
+  name: "user intent for row 34CD"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::RDS::DBInstance"
+      attribute: "Engine"
+      operator: "equals"
+      value: "mysql"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::RDS::DBInstance"
+      attribute: "DBInstanceClass"
+      operator: "equals"
+      value: "db.r5.large"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::RDS::DBInstance"
+      attribute: "StorageType"
+      operator: "equals"
+      value: "io1"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::RDS::DBInstance"
+      attribute: "Iops"
+      operator: "exists"

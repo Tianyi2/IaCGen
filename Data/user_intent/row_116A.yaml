@@ -1,0 +1,22 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_116A"
+  name: "user intent for row 116A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::SNS::Subscription"
+      attribute: "Protocol"
+      operator: "equals"
+      value: "sqs"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::SNS::Subscription"
+      attribute: "RawMessageDelivery"
+      operator: "is_true"
+
+
+

@@ -1,0 +1,18 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_60A"
+  name: "user intent for row 60A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::KMS::Alias"
+      attribute: "AliasName"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::KMS::Alias"
+      attribute: "TargetKeyId"
+      operator: "exists"

@@ -1,0 +1,50 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_141C"
+  name: "user intent for row 141C"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::StepFunctions::StateMachine"
+      attribute: "DefinitionString"
+      operator: "contains"
+      value: "Human"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::StepFunctions::StateMachine"
+      attribute: "DefinitionString"
+      operator: "contains"
+      value: "Person"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::StepFunctions::StateMachine"
+      attribute: "DefinitionString"
+      operator: "contains"
+      value: "$.detail.object.key"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::StepFunctions::StateMachine"
+      attribute: "DefinitionString"
+      operator: "contains"
+      value: "PhoneNumber"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::StepFunctions::StateMachine"
+      attribute: "DefinitionString"
+      operator: "contains"
+      value: "arn:aws:states:::aws-sdk:sns:publish"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::StepFunctions::StateMachine"
+      attribute: "DefinitionString"
+      operator: "contains"
+      value: "arn:aws:states:::aws-sdk:rekognition:detectLabels"
+
+    

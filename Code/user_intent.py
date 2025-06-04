@@ -216,31 +216,25 @@ def process_templates(result_csv_path, iac_user_intent_csv_path, output_csv_path
         
         # Process each row
         for _, row in iac_df.iterrows():   # row 2
+            print(row['row_number'])
             row_number = row['row_number']
-            # print(row_number)
-            
-            if row_number == 2:
-                continue
+
+            try:   # Handle the case where the result file is empty or partially completed
+                template_path = result_df.loc[row_number, 'final_template_path']
+            except Exception as e:
+                print(f"Row {row_number} has no template path")
+                break
 
             ground_truth_path = row['ground_truth_path']
             user_intent_files = row['user_intent_file_path'].split(', ') if pd.notna(row['user_intent_file_path']) else None
             user_intent_ids = row['user_intent_id'].split(', ') if pd.notna(row['user_intent_id']) else None
             
-            # Get the template path from result_df using row_number
-            template_path = result_df.loc[row_number, 'final_template_path']
-
-            print(template_path)
-
             # Validate with Checkov
             checkov_result = validate_with_checkov_package(
                 template_path=template_path,
                 user_intent_files=user_intent_files,
                 user_intent_ids=user_intent_ids
             )
-
-            # print(user_intent_files)
-
-            # print(checkov_result['pass_user_intent'] if checkov_result['pass_user_intent'] != None else checkov_result)
             
             # Analyze resource coverage
             coverage_result = analyze_resource_coverage(ground_truth_path, template_path)
@@ -257,15 +251,13 @@ def process_templates(result_csv_path, iac_user_intent_csv_path, output_csv_path
                 'resource_details': coverage_result['resource_details'],
                 'missing_resources': coverage_result['resource_details']['missing'],
             }
-            
             results.append(result)
         
         # Create DataFrame from results
         results_df = pd.DataFrame(results)
         
-        # print(results)
-
         # Save results to CSV
+        os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
         results_df.to_csv(output_csv_path, index=False)
         print(f"Results saved to {output_csv_path}")
         
@@ -274,44 +266,22 @@ def process_templates(result_csv_path, iac_user_intent_csv_path, output_csv_path
 
 
 if __name__ == "__main__":
-    # Note: Not sure why row 2 is not working, manual checking is used
-    # Note: o3-mini fail for row 103, but the failure verification code is not yet implemented, so need to manually skip it
-    print("Start Checkov Validation")
-    IAC_USER_INTENT_CSV_PATH = "dataset/iac_user_intent.csv"
+    # IAC_USER_INTENT_CSV_PATH = "Data/iac_user_intent.csv"
 
-    model_name = "gpt-4o"
-    result_csv_path = f"result/iterative_{model_name}_results.csv"
-    output_csv_path = f"result/user_intent/temp/user_intent_{model_name}_results.csv"
-    
-    process_templates(result_csv_path, IAC_USER_INTENT_CSV_PATH, output_csv_path)
+    # llm_model = "claude-3-7-sonnet-20250219"   # You only need to change this before run the file. Note you should ensure you ran main.py with this llm model.
+    # result_csv_path = f"Result/iterative_{llm_model}_results.csv"
+    # output_csv_path = f"Result/user_intent/user_intent_{llm_model}_results.csv"
 
+    # print("Start Checkov Validation")
+    # process_templates(result_csv_path, IAC_USER_INTENT_CSV_PATH, output_csv_path)
+    # print("End Checkov Validation")
 
-    
-    # template_path = "C:/Users/16567/Desktop/code/groud_truth/template/sample_environment_template.yaml"
-    # template_path = "C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/claude/claude-3-5-sonnet-20241022/row_2_update_1_template_20250217_120913.yaml"
-    # template_path_7 = "C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/claude/claude-3-5-sonnet-20241022/row_7_update_8_template_20250421_154425.yaml"
-    # template_path = "C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/claude/claude-3-7-sonnet-20250219/row_108_update_4_template_20250407_141134.yaml"
-    # template_path = "C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/deepseek/deepseek-chat/row_2_update_4_template_20250505_092018.yaml"
-    # template_path = "C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/gpt/o3-mini/row_132_update_5_template_20250515_155017.yaml"
-    # ground_truth_path = "C:/Users/16567/Desktop/code/groud_truth/template/batch-demo.template.yaml"
-    
-    # user_intent_file = ["C:/Users/16567/Desktop/code/user_intent/row_30.yaml"]
-    # user_intent_files = ["C:/Users/16567/Desktop/code/user_intent/row_132A.yaml", "C:/Users/16567/Desktop/code/user_intent/row_132B.yaml"]
-                         
-    # result_cli = validate_with_checkov_package(template_path, user_intent_files, ["UIV_CUSTOM_ROW_132A", "UIV_CUSTOM_ROW_132B"])
-    # print(result_cli)
-    # print(analyze_resource_coverage(ground_truth_path, template_path))
-    # print(result_cli['pass_user_intent'] if result_cli['pass_user_intent'] != None else result_cli)
-    
-
-    # user_intent_files = ["C:/Users/16567/Desktop/code/user_intent/row_7A.yaml", "C:/Users/16567/Desktop/code/user_intent/row_7A.yaml"]
-    # result_cli = validate_with_checkov_package(template_path_7, user_intent_files, ["UIV_CUSTOM_ROW_7"])
-    # print(result_cli['pass_user_intent'] if result_cli['pass_user_intent'] != None else result_cli)
-    # print(result_cli)
-
-    # print(make_temp_dir(user_intent_file))
-    print("End Checkov Validation")
-
-
-    # Chat+Reasoner: 94 (no file), 106 (no file)
-    # o3-mini 103 (Fail Generation), 129 (no file), 131 (no file), 132 (no file)
+    template_path = "Data/groud_truth/template/stepfunction-recognition.yaml"
+    user_intent_files = ["Data/user_intent/row_141C.yaml"]
+    user_intent_ids = ["UIV_CUSTOM_ROW_141C"]
+    checkov_result = validate_with_checkov_package(
+                template_path=template_path,
+                user_intent_files=user_intent_files,
+                user_intent_ids=user_intent_ids
+    )
+    print(checkov_result)

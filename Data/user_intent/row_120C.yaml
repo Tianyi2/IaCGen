@@ -1,0 +1,41 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_120C"
+  name: "user intent for row 120C"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Pipes::Pipe"
+      attribute: "SourceParameters.*.FilterCriteria"
+      operator: "contains"
+      value: "Filters"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Pipes::Pipe"
+      attribute: "TargetParameters.*.BatchJobParameters"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Pipes::Pipe"
+      attribute: "TargetParameters.*.InputTemplate"
+      operator: "exists"
+    # - cond_type: "attribute"
+    #   resource_types:
+    #     - "AWS::Batch::JobDefinitione"
+    #   attribute: "PlatformCapabilities"
+    #   operator: "contains"
+    #   value: "FARGATE"
+
+    # - cond_type: "attribute"
+    #   resource_types:
+    #     - "AWS::Batch::JobDefinitione"
+    #   attribute: "RetryStrategy.Attempts"
+    #   operator: "greater_than_or_equal"
+    #   value: 1
+
+
+

@@ -1,0 +1,34 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_108A"
+  name: "user intent for row 108A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Cognito::UserPool"
+      attribute: "AdminCreateUserConfig.AllowAdminCreateUserOnly"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Cognito::UserPool"
+      attribute: "AdminCreateUserConfig.InviteMessageTemplate"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Cognito::UserPool"
+      attribute: "Policies.PasswordPolicy"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Cognito::UserPool"
+      attribute: "AutoVerifiedAttributes"
+      operator: "equals"
+      value: "email"
+
+
+

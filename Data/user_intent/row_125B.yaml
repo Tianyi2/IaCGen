@@ -1,0 +1,41 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_125B"
+  name: "user intent for row 125B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "HttpMethod"
+      operator: "contains"
+      value: "POST"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "ApiKeyRequired"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "AuthorizationType"
+      operator: "contains"
+      value: "NONE"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "Integration.IntegrationHttpMethod"
+      operator: "contains"
+      value: "POST"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "Integration.PassthroughBehavior"
+      operator: "contains"
+      value: "WHEN_NO_TEMPLATES"
+
