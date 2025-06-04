@@ -1,11 +1,11 @@
 import sys
 import os
-from datetime import datetime
 import pandas as pd
-
-# Add the parent directory to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+import anthropic
+import google.generativeai as genai
+from openai import OpenAI
+from dotenv import load_dotenv
+from datetime import datetime
 from generation.cloud_generation import (
     gemini_generate_cf_template,
     chatgpt_generate_cf_template,
@@ -17,13 +17,16 @@ from evaluation.cloud_evaluation import (
     evaluate_template_deployment,
     analyze_resource_coverage
 )
-from Config.configs import GEMIN_API_KEY, CHATGPT_API_KEY, CLAUDE_API_KEY, DEEPSEEK_API_KEY
-from Code.generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT, FORMATE_SYSTEM_PROMPT
+from generation.prompts.prompt_for_cloud import TOP_PROMPT, BOTTOM_PROMPT, FORMATE_SYSTEM_PROMPT
 
-# Import necessary LLM libraries
-import google.generativeai as genai
-from openai import OpenAI
-import anthropic
+# Load environment variables from .env file
+load_dotenv()
+
+GEMIN_API_KEY = os.getenv('GEMIN_API_KEY', '')
+CHATGPT_API_KEY = os.getenv('CHATGPT_API_KEY', '')
+CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY', '')
+DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '')
+
 
 class IterativeTemplateGenerator:
     YAML_STAGE_NAME = 'yaml_validation'
