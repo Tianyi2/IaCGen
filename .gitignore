@@ -2,6 +2,8 @@
 .env
 venv
 
+test.py
+
 llm_generated_data
 result
 
