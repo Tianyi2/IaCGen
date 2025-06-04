@@ -4,7 +4,7 @@
 `DPIaC-Eval` is the first deployablility-focused IaC benchmark that focuses on CloudFormation and AWS.
 
 
-## Installation
+## Getting Started
 1. Download the project
 2. [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [setup credentials](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html)
 3. Download required libraries in the [requirement.txt](https://github.com/Tianyi2/IaCGen/blob/main/requirements.txt)
@@ -30,9 +30,10 @@ DEEPSEEK_API_KEY=your_actual_deepseek_api_key_here
 
 
 ## Contribution
-We welcome all forms of contribution! We aim to quantitatively and comprehensively evaluate the IaC code generation capabilities of large language models. If find bugs, issues, or have suggestions, please share them via GitHub Issues.  
+Submit a **PR** if you want to contribute to the project.
+
+If find bugs, issues, or have suggestions, please share them via **GitHub Issues**.    
 
 
 ## Acknowledgments
 [IaC-Eval](https://github.com/autoiac-project/iac-eval)
-
