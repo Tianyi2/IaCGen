@@ -1,6 +1,7 @@
 ## Data
 1. [iac.csv](https://github.com/Tianyi2/IaCGen/blob/main/Data/iac.csv) is the benchmark which contains a column for the ground truth template location and a column for the prompt.
 2. [process_iac.csv](https://github.com/Tianyi2/IaCGen/blob/main/Data/process_iac.csv) is also the benchmark, but with additional information about each row.
+3. [iac_user_intent.csv](https://github.com/Tianyi2/IaCGen/blob/main/Data/iac_user_intent.csv) contains the necessary information for the user intent validation.
 
 
 ### process_iac.csv
