@@ -1,4 +1,4 @@
-# IaCGen---First edition
+# IaCGen
 `IaCGen` is a LLM improvement framework in Infrastructure-as-Code (IaC) generation.
 
 `DPIaC-Eval` is the first deployablility-focused IaC benchmark that focuses on CloudFormation and AWS.
