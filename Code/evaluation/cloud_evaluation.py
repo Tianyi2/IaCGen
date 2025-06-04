@@ -450,11 +450,12 @@ def evaluate_templates_from_csv(csv_input_path, csv_output_path, llm_type):
     return results_df
 
 
-# Main Function
 def main():
-    # This function is used to evaluate all LLM generated template with template file path in a CSV file.
+    # This function is used to validate all LLM generated template with template file path in a CSV file.
+    # This main() function is not used for IaCGen, this is just to test the functions above.
+    # Just run the main.py function to execute IaCGen.
     input_csv = "Data/iac.csv"
-    output_csv = "Result/claude.csv"
+    output_csv = "Result/claude_results.csv"
     llm_type = "claude"   # gemini, gpt, claude
     results = evaluate_templates_from_csv(input_csv, output_csv, llm_type)
     print(f"Evaluation completed. Results saved to {output_csv}")

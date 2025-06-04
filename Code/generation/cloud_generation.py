@@ -232,8 +232,10 @@ def process_ioc_csv(input_csv, output_csv, model, llm_type, llm_model):
     return output_csv
 
 
-def start_generation():
-    # Configuration Variables:
+def main():
+    # This main() function is not used for IaCGen, this is just to test the functions above.
+    # Just run the main.py function to execute IaCGen.
+
     input_csv = "Data/iac.csv"
     llm_type = "claude"  # "gemini", "gpt" or "claude"
     llm_model = "claude-3-5-sonnet-20241022"  # [gemini-1.5-flash, gpt-4o-mini, claude-3-5-sonnet-20241022, gpt-4o, deepseek]
@@ -258,5 +260,5 @@ def start_generation():
 
 if __name__ == "__main__":
     print("Start abcd\n")
-    start_generation()
+    main()
     print("\nEnd")
