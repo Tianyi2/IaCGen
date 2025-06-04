@@ -14,6 +14,13 @@
   - `parameter_count`: Number of parameters included in the template.
 
 
+### iac_user_intent.csv
+- iac_user_intent.csv is built upon the process_iac.csv file by adding the information for user intent validation:
+  - `user_intent_file_path`: List of user intent specification file pathes that will be used to validate against the LLM-generated IaC.
+  - `user_intent_id`: Id of user intent specification files.
+  - `needed_resources`: List of needed AWS resources for the IaC template.  
+
+
 ### Difficulty Levels
 | **Difficulty level** | **LOC**   | **Resource** | **Parameter** |
 |----------------------|-----------|--------------|----------------|
