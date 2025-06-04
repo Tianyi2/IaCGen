@@ -705,7 +705,7 @@ def process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=0, end
 # Start
 if __name__ == "__main__":
     print("IaCGen Starting")
-    input_csv = "dataset/iac.csv"
+    input_csv = "Data/iac.csv"
     llm_type = "claude"  # "gemini", "gpt", "claude", or "deepseek"
     llm_model = "claude-3-7-sonnet-20250219"  # [gemini-1.5-flash, gpt-4o, o3-mini, o1, claude-3-5-sonnet-20241022, claude-3-7-sonnet-20250219, deepseek-chat [V3], deepseek-reasoner [R1]]
     output_csv = f"Result/iterative_{llm_model}_results.csv"

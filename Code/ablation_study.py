@@ -710,7 +710,7 @@ if __name__ == "__main__":
     input_csv = "Data/iac.csv"
     output_csv = f"Result/ablation_study/iterative_{llm_model}_results.csv"
     start_row = 0
-    end_row = 1
+    end_row = 153
     print("IaCGen Starting - Ablation Study without conversation history")
     print(f"Starting iterative generation with {llm_type} model")
     process_ioc_csv(input_csv, output_csv, llm_type, llm_model, start_row=start_row, end_row=end_row)
