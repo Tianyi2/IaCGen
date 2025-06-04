@@ -1,0 +1,22 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_93A"
+  name: "user intent for row 93A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "InstanceType"
+      operator: "equals"
+      value: "t3.medium"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "Tags"
+      operator: "exists"
+
+
+

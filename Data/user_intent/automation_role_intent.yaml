@@ -1,0 +1,66 @@
+metadata:
+  id: "CKV2_CUSTOM_6"
+  name: "Automation Role Configuration Validation"
+  category: "IAM"
+  severity: "HIGH"
+  guideline: "Ensure automation role meets required permissions and trust relationships"
+
+definition:
+  and:
+    # Trust Relationship Validation
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.AssumeRolePolicyDocument.Statement[*].Principal.Service"
+      operator: "contains"
+      value: "ssm.amazonaws.com"
+
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.AssumeRolePolicyDocument.Statement[*].Principal.Service"
+      operator: "contains"
+      value: "ec2.amazonaws.com"
+
+    # Managed Policy Validation
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.ManagedPolicyArns"
+      operator: "contains"
+      value: "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
+
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.ManagedPolicyArns"
+      operator: "contains"
+      value: "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess"
+
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.ManagedPolicyArns"
+      operator: "contains"
+      value: "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
+
+    # Inline Policy Validation
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.Policies[*].PolicyDocument.Statement[*].Action"
+      operator: "contains"
+      value: "iam:PassRole"
+
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.Policies[*].PolicyDocument.Statement[*].Action"
+      operator: "contains"
+      value: "sns:Publish"
+
+    # Role Metadata Validation
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.RoleName"
+      operator: "equals"
+      value: "AutomationRole"
+
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.Path"
+      operator: "equals"
+      value: "/"

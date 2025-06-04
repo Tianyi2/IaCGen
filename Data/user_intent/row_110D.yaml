@@ -1,0 +1,25 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_110B"
+  name: "user intent for row 110B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Lambda::Permission"
+      attribute: "Action"
+      operator: "equals"
+      value: "lambda:InvokeFunction"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Lambda::Permission"
+      attribute: "Principal"
+      operator: "equals"
+      value: "apigateway.amazonaws.com"
+
+
+
+
+

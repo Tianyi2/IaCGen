@@ -1,0 +1,20 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_129B"
+  name: "user intent for row 129B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Config::ConfigurationRecorder"
+      attribute: "RecordingGroup.AllSupported"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Config::ConfigurationRecorder"
+      attribute: "RecordingGroup.IncludeGlobalResourceTypes"
+      operator: "is_true"
+
+    

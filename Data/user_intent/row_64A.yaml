@@ -1,0 +1,33 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_64A"
+  name: "user intent for row 64A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "InstanceType"
+      operator: "equals"
+      value: "t2.micro"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "NetworkInterfaces.AssociatePublicIpAddress"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "UserData.Fn::Base64"
+      operator: "contains"
+      value: "php"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "UserData.Fn::Base64"
+      operator: "contains"
+      value: "httpd"

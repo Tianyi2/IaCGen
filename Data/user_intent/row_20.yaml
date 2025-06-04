@@ -1,0 +1,20 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_20"
+  name: "user intent for row 20"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "connection"
+      resource_types:
+        - "AWS::CloudWatch::Dashboarde"
+      connected_resource_types:
+        - "AWS::Logs::QueryDefinition"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::CloudWatch::Dashboard"
+      attribute: "DashboardName"
+      operator: "contains"
+      value: "ClientVPN"

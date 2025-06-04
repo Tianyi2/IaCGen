@@ -181,8 +181,8 @@ def process_security_validation_with_checkov(input_csv: str, output_csv: str, st
 # Start
 if __name__ == "__main__":
     input_csv = "Result/iterative_claude-3-7-sonnet-20250219_results.csv"
-    model_name = input_csv.split("_")[1]
-    output_csv = f"Result/security/security_{model_name}_results.csv"
+    llm_model = input_csv.split("_")[1]
+    output_csv = f"Result/security/security_{llm_model}_results.csv"
     start_row = 0
     end_row = 153
 

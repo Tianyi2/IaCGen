@@ -1,0 +1,17 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_110A"
+  name: "user intent for row 110A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::RestApi"
+      attribute: "EndpointConfiguration.Types"
+      operator: "contains"
+      value: "PRIVATE"
+
+
+
+

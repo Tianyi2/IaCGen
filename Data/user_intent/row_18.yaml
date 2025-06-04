@@ -1,0 +1,80 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_18"
+  name: "user intent for row 18"
+  category: "USER_INTENT"
+
+definition:
+  and: 
+    - cond_type: "connection"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      connected_resource_types:
+        - "AWS::Pipes::Pipe"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "StreamSpecification.StreamViewType"
+      operator: "equals"
+      value: "NEW_AND_OLD_IMAGES"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Pipes::Pipe"
+      attribute: "SourceParameters.FilterCriteria.Filters"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Pipes::Pipe"
+      attribute: "TargetParameters.EventBridgeEventBusParameters.DetailType"
+      operator: "exists"
+    
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Pipes::Pipe"
+      attribute: "TargetParameters.EventBridgeEventBusParameters.Source"
+      operator: "exists"
+
+    - cond_type: "connection"
+      resource_types:
+        - "AWS::Pipes::Pipe"
+      connected_resource_types:
+        - "AWS::Events::EventBus"
+      operator: "exists"
+
+    - cond_type: "connection"
+      resource_types:
+        - "AWS::Pipes::Pipe"
+      connected_resource_types:
+        - "AWS::IAM::Role"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::IAM::Role"
+      attribute: "Policies.PolicyDocument.Statement.*.Action"
+      operator: "contains"
+      value: "dynamodb:DescribeStream"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::IAM::Role"
+      attribute: "Policies.PolicyDocument.Statement.*.Action"
+      operator: "contains"
+      value: "dynamodb:GetRecords"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::IAM::Role"
+      attribute: "Policies.PolicyDocument.Statement.*.Action"
+      operator: "contains"
+      value: "dynamodb:GetShardIterator"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::IAM::Role"
+      attribute: "Policies.PolicyDocument.Statement.*.Action"
+      operator: "contains"
+      value: "dynamodb:ListStreams"  

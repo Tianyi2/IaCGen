@@ -1,0 +1,15 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_35A"
+  name: "user intent for row 35A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Subnet"
+      attribute: "MapPublicIpOnLaunch"
+      operator: "is_true"
+
+
+

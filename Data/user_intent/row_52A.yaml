@@ -1,0 +1,13 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_52A"
+  name: "user intent for row 52A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Route53RecoveryControl::RoutingControl"
+      attribute: "ControlPanelArn"
+      operator: "exists"
+

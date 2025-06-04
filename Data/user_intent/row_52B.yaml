@@ -1,0 +1,33 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_52B"
+  name: "user intent for row 52B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Route53RecoveryControl::SafetyRule"
+      attribute: "ControlPanelArn"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Route53RecoveryControl::SafetyRule"
+      attribute: "AssertionRule.AssertedControls"
+      operator: "length_equals"
+      value: 2
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Route53RecoveryControl::SafetyRule"
+      attribute: "RuleConfig.Threshold"
+      operator: "equals"
+      value: 1
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Route53RecoveryControl::SafetyRule"
+      attribute: "RuleConfig.Type"
+      operator: "equals"
+      value: "ATLEAST"

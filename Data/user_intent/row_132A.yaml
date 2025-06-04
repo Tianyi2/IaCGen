@@ -1,0 +1,30 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_132A"
+  name: "user intent for row 132A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::ComputeEnvironment"
+      attribute: "ComputeResources.Type"
+      operator: "contains"
+      value: "EC2"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::ComputeEnvironment"
+      attribute: "ComputeResources.AllocationStrategy"
+      operator: "contains"
+      value: "BEST_FIT"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::ComputeEnvironment"
+      attribute: "ComputeResources.InstanceTypes"
+      operator: "contains"
+      value: "m5.large"
+
+
+    

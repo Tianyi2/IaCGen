@@ -1,0 +1,22 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_127A"
+  name: "user intent for row 127A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EFS::FileSystem"
+      attribute: "BackupPolicy.Status"
+      operator: "contains"
+      value: "ENABLED"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EFS::FileSystem"
+      attribute: "LifecyclePolicies.TransitionToIA"
+      operator: "contains"
+      value: "AFTER_30_DAYS"
+
+    

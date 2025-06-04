@@ -1,0 +1,20 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_125C"
+  name: "user intent for row 125C"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::RequestValidator"
+      attribute: "ValidateRequestBody"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::RequestValidator"
+      attribute: "ValidateRequestParameters"
+      operator: "is_true"
+
+

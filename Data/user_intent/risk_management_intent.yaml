@@ -1,0 +1,63 @@
+metadata:
+  id: "CKV2_CUSTOM_risk"
+  name: "Risk Management Resources Validation"
+  category: "GENERAL_SECURITY"
+  severity: "HIGH"
+  guideline: "Ensure required resources for risk tracking system are properly configured"
+
+definition:
+  and:
+    # Validate Log Groups configuration
+    - cond_type: "attribute"
+      resource_types: ["AWS::Logs::LogGroup"]
+      attribute: "Properties.LogGroupName"
+      operator: "regex_match"
+      value: "/aws/lambda/wa-(risk-tracking|update-workload)"
+
+    # Validate IAM Role configuration
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.RoleName"
+      operator: "equals"
+      value: "wa-risk-tracking-lambda-role"
+
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.ManagedPolicyArns"
+      operator: "contains"
+      value: "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+
+    # Validate DynamoDB Table configuration
+    - cond_type: "attribute"
+      resource_types: ["AWS::DynamoDB::Table"]
+      attribute: "Properties.TableName"
+      operator: "equals"
+      value: "wa_workload_data"
+
+    - cond_type: "attribute"
+      resource_types: ["AWS::DynamoDB::Table"]
+      attribute: "Properties.KeySchema"
+      operator: "contains"
+      value: {"AttributeName": "workload_id", "KeyType": "HASH"}
+
+    # Validate SNS Topic configuration
+    - cond_type: "attribute"
+      resource_types: ["AWS::SNS::Topic"]
+      attribute: "Properties.TopicName"
+      operator: "equals"
+      value: "wa-risk-tracking"
+
+    # Validate SNS Topic Policy permissions
+    - cond_type: "attribute"
+      resource_types: ["AWS::SNS::TopicPolicy"]
+      attribute: "Properties.PolicyDocument.Statement.*.Principal.Service"
+      operator: "equals"
+      value: "ssm.amazonaws.com"
+
+    # Validate minimum security standards
+    - cond_type: "attribute"
+      resource_types: ["AWS::IAM::Role"]
+      attribute: "Properties.Policies.*.PolicyDocument.Statement.*.Effect"
+      operator: "equals"
+      value: "Allow"
+      value_type: "none"

@@ -1,0 +1,26 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_104A"
+  name: "user intent for row 104A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "InstanceType"
+      operator: "contains"
+      value: "t3.nano"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "SubnetId"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "SecurityGroupIds"
+      operator: "exists" 
+

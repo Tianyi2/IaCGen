@@ -1,0 +1,18 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_59B"
+  name: "user intent for row 58B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::CloudWatch::Alarm"
+      attribute: "ComparisonOperator"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::CloudWatch::Alarm"
+      attribute: "MetricName"
+      operator: "exists"

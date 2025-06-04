@@ -1,0 +1,20 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_94A"
+  name: "user intent for row 94A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::SSM::Document"
+      attribute: "DocumentType"
+      operator: "equals"
+      value: "Automation"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::SSM::Document"
+      attribute: "Content.schemaVersion"
+      operator: "equals"
+      value: "0.3"

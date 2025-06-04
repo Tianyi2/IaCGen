@@ -274,44 +274,12 @@ def process_templates(result_csv_path, iac_user_intent_csv_path, output_csv_path
 
 
 if __name__ == "__main__":
-    # Note: Not sure why row 2 is not working, manual checking is used
-    # Note: o3-mini fail for row 103, but the failure verification code is not yet implemented, so need to manually skip it
+    IAC_USER_INTENT_CSV_PATH = "Data/iac_user_intent.csv"
+
+    llm_model = "claude-3-7-sonnet-20250219"
+    result_csv_path = f"Result/iterative_{llm_model}_results.csv"
+    output_csv_path = f"Result/user_intent/temp/user_intent_{llm_model}_results.csv"
+
     print("Start Checkov Validation")
-    IAC_USER_INTENT_CSV_PATH = "dataset/iac_user_intent.csv"
-
-    model_name = "gpt-4o"
-    result_csv_path = f"result/iterative_{model_name}_results.csv"
-    output_csv_path = f"result/user_intent/temp/user_intent_{model_name}_results.csv"
-    
     process_templates(result_csv_path, IAC_USER_INTENT_CSV_PATH, output_csv_path)
-
-
-    
-    # template_path = "C:/Users/16567/Desktop/code/groud_truth/template/sample_environment_template.yaml"
-    # template_path = "C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/claude/claude-3-5-sonnet-20241022/row_2_update_1_template_20250217_120913.yaml"
-    # template_path_7 = "C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/claude/claude-3-5-sonnet-20241022/row_7_update_8_template_20250421_154425.yaml"
-    # template_path = "C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/claude/claude-3-7-sonnet-20250219/row_108_update_4_template_20250407_141134.yaml"
-    # template_path = "C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/deepseek/deepseek-chat/row_2_update_4_template_20250505_092018.yaml"
-    # template_path = "C:/Users/16567/Desktop/code/llm_generated_data/template/iterative/gpt/o3-mini/row_132_update_5_template_20250515_155017.yaml"
-    # ground_truth_path = "C:/Users/16567/Desktop/code/groud_truth/template/batch-demo.template.yaml"
-    
-    # user_intent_file = ["C:/Users/16567/Desktop/code/user_intent/row_30.yaml"]
-    # user_intent_files = ["C:/Users/16567/Desktop/code/user_intent/row_132A.yaml", "C:/Users/16567/Desktop/code/user_intent/row_132B.yaml"]
-                         
-    # result_cli = validate_with_checkov_package(template_path, user_intent_files, ["UIV_CUSTOM_ROW_132A", "UIV_CUSTOM_ROW_132B"])
-    # print(result_cli)
-    # print(analyze_resource_coverage(ground_truth_path, template_path))
-    # print(result_cli['pass_user_intent'] if result_cli['pass_user_intent'] != None else result_cli)
-    
-
-    # user_intent_files = ["C:/Users/16567/Desktop/code/user_intent/row_7A.yaml", "C:/Users/16567/Desktop/code/user_intent/row_7A.yaml"]
-    # result_cli = validate_with_checkov_package(template_path_7, user_intent_files, ["UIV_CUSTOM_ROW_7"])
-    # print(result_cli['pass_user_intent'] if result_cli['pass_user_intent'] != None else result_cli)
-    # print(result_cli)
-
-    # print(make_temp_dir(user_intent_file))
     print("End Checkov Validation")
-
-
-    # Chat+Reasoner: 94 (no file), 106 (no file)
-    # o3-mini 103 (Fail Generation), 129 (no file), 131 (no file), 132 (no file)

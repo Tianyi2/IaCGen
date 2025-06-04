@@ -1,0 +1,56 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_115A"
+  name: "user intent for row 115A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Events::Rule"
+      attribute: "State"
+      operator: "equals"
+      value: "ENABLED"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Events::Rule"
+      attribute: "EventPattern.detail-type"
+      operator: "contains"
+      value: "AWS API Call via CloudTrail"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Events::Rule"
+      attribute: "EventPattern.detail"
+      operator: "contains"
+      value: "secretsmanager.amazonaws.com"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Events::Rule"
+      attribute: "EventPattern.detail"
+      operator: "contains"
+      value: "CreateSecret"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Events::Rule"
+      attribute: "EventPattern.detail"
+      operator: "contains"
+      value: "UpdateSecret"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Events::Rule"
+      attribute: "EventPattern.detail"  
+      operator: "contains"
+      value: "GetSecretValue"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Events::Rule"
+      attribute: "EventPattern.detail"
+      operator: "contains"
+      value: "PutSecretValue"
+

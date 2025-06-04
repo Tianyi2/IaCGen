@@ -1,0 +1,44 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_82A"
+  name: "user intent for row 82A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::TransitGateway"
+      attribute: "AmazonSideAsn"
+      operator: "equals"
+      value: "65000"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::TransitGateway"
+      attribute: "AutoAcceptSharedAttachments"
+      operator: "equals"
+      value: "enable"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::TransitGateway"
+      attribute: "DefaultRouteTableAssociation"
+      operator: "equals"
+      value: "enable"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::TransitGateway"
+      attribute: "DefaultRouteTablePropagation"
+      operator: "equals"
+      value: "enable"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::TransitGateway"
+      attribute: "VpnEcmpSupport"
+      operator: "equals"
+      value: "enable"
+
+
+

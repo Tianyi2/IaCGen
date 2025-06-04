@@ -1,0 +1,43 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_132A"
+  name: "user intent for row 132A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::JobDefinition"
+      attribute: "Type"
+      operator: "contains"
+      value: "container"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::JobDefinition"
+      attribute: "ContainerProperties.Image"
+      operator: "contains"
+      value: "amazonlinux:latest"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::JobDefinition"
+      attribute: "ContainerProperties.Command"
+      operator: "contains"
+      value: "aws-cli"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::JobDefinition"
+      attribute: "ContainerProperties.Command"
+      operator: "contains"
+      value: "s3"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Batch::JobDefinition"
+      attribute: "ContainerProperties.Command"
+      operator: "contains"
+      value: "cp"
+
+    

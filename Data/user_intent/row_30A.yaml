@@ -1,0 +1,22 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_30A"
+  name: "user intent for row 30A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "connection"
+      resource_types:
+        - "AWS::EC2::VPC"
+      connected_resource_types:
+        - "AWS::EC2::Subnet"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::VPC"
+      attribute: "EnableDnsHostnames"
+      operator: "is_true"
+
+
+

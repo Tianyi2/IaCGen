@@ -1,0 +1,12 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_0"
+  name: "Tuser intent for row 0"
+  category: "USER_INTENT"
+
+definition:
+  cond_type: "attribute"
+  resource_types: 
+    - "AWS::SQS::Queue"
+  attribute: "VisibilityTimeout"
+  operator: "exists"
+

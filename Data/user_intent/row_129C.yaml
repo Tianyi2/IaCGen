@@ -1,0 +1,29 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_129C"
+  name: "user intent for row 129C"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Lambda::Function"
+      attribute: "Code.ZipFile"
+      operator: "contains"
+      value: "RetentionPeriod"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Lambda::Function"
+      attribute: "Code.ZipFile"
+      operator: "contains"
+      value: "Create"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::Lambda::Function"
+      attribute: "Code.ZipFile"
+      operator: "contains"
+      value: "Update"
+
+    

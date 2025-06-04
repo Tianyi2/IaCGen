@@ -1,0 +1,41 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_125D"
+  name: "user intent for row 125D"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Model"
+      attribute: "Schema"
+      operator: "contains"
+      value: "to"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Model"
+      attribute: "Schema"
+      operator: "contains"
+      value: "from"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Model"
+      attribute: "Schema"
+      operator: "contains"
+      value: "subject"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Model"  
+      attribute: "Schema"
+      operator: "contains"
+      value: "text"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Model"  
+      attribute: "Schema"
+      operator: "contains"
+      value: "html"

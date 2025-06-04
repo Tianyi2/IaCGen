@@ -1,0 +1,74 @@
+metadata:
+  id: "CKV2_CUSTOM_vpc"
+  name: "VPC Flow Logs Configuration Validation"
+  category: "LOGGING"
+  severity: "HIGH"
+  guideline: "Ensure VPC flow logs are properly configured with S3 logging and security settings"
+
+definition:
+  and:
+    # Validate VPC Configuration
+    - cond_type: "attribute"
+      resource_types: ["AWS::EC2::VPC"]
+      attribute: "Properties.EnableDnsSupport"
+      operator: "equals"
+      value: "true"
+    
+    - cond_type: "attribute"
+      resource_types: ["AWS::EC2::VPC"]
+      attribute: "Properties.EnableDnsHostnames"
+      operator: "equals"
+      value: "true"
+
+    # Validate S3 Bucket Configuration (when created)
+    - or:
+        - cond_type: "attribute"
+          resource_types: ["AWS::S3::Bucket"]
+          attribute: "Properties.PublicAccessBlockConfiguration.BlockPublicAcls"
+          operator: "equals"
+          value: "true"
+        
+        - cond_type: "attribute"
+          resource_types: ["AWS::S3::Bucket"]
+          attribute: "Properties.PublicAccessBlockConfiguration.BlockPublicPolicy"
+          operator: "equals"
+          value: "true"
+
+    # Validate Bucket Policy Statements
+    - cond_type: "attribute"
+      resource_types: ["AWS::S3::BucketPolicy"]
+      attribute: "Properties.PolicyDocument.Statement.*.Sid"
+      operator: "contains"
+      value: "AWSLogDeliveryWrite"
+
+    - cond_type: "attribute"
+      resource_types: ["AWS::S3::BucketPolicy"]
+      attribute: "Properties.PolicyDocument.Statement.*.Condition.Bool.aws:SecureTransport"
+      operator: "equals"
+      value: "false"
+
+    # Validate Flow Log Configuration
+    - cond_type: "attribute"
+      resource_types: ["AWS::EC2::FlowLog"]
+      attribute: "Properties.LogDestinationType"
+      operator: "equals"
+      value: "s3"
+
+    - cond_type: "attribute"
+      resource_types: ["AWS::EC2::FlowLog"]
+      attribute: "Properties.LogFormat"
+      operator: "equals"
+      value: "${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${az-id} ${instance-id} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${subnet-id} ${sublocation-id} ${sublocation-type} ${tcp-flags} ${type} ${flow-direction} ${pkt-dst-aws-service} ${pkt-src-aws-service} ${traffic-path}"
+
+    # Validate Tags across all resources
+    - cond_type: "attribute"
+      resource_types: ["*"]
+      attribute: "Properties.Tags.*.Key"
+      operator: "contains"
+      value: "Name"
+
+    - cond_type: "attribute"
+      resource_types: ["*"]
+      attribute: "Properties.Tags.*.Key"
+      operator: "contains"
+      value: "Purpose"

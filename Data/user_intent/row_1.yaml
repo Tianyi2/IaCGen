@@ -1,0 +1,38 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_1"
+  name: "user intent for row 1"
+  category: "USER_INTENT"
+
+definition:
+  or: 
+    - and: 
+      - cond_type: "attribute"
+        resource_types: 
+          - "AWS::SNS::Topic"
+        attribute: "Subscription"
+        operator: "exists"
+      - cond_type: "attribute"
+        resource_types: 
+          - "AWS::SNS::Topic"
+        attribute: "Subscription.Protocol"
+        operator: "equals"
+        value: "email"
+      - cond_type: "attribute"
+        resource_types: 
+          - "AWS::SNS::Topic"
+        attribute: "Subscription.Endpoint"
+        operator: "equals"
+        value: "test@test.com"
+    - and: 
+      - cond_type: "attribute"
+        resource_types:
+          - "AWS::SNS::Subscription"
+        attribute: "Protocol"
+        operator: "equals"
+        value: "email"
+      - cond_type: "attribute"
+        resource_types:
+          - "AWS::SNS::Subscription"
+        attribute: "Endpoint"
+        operator: "equals"
+        value: "test@test.com"

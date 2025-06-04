@@ -1,0 +1,21 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_103A"
+  name: "user intent for row 103A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "InstanceType"
+      operator: "contains"
+      value: "t2.micro"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::EC2::Instance"
+      attribute: "NetworkInterfaces.AssociatePublicIpAddress"
+      operator: "is_true"
+
+    

@@ -1,0 +1,39 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_110B"
+  name: "user intent for row 110B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "AuthorizationType"
+      operator: "equals"
+      value: "NONE"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "HttpMethod"
+      operator: "equals"
+      value: "GET"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "Integration.ConnectionType"
+      operator: "equals"
+      value: "INTERNET"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "Integration.Type"
+      operator: "equals"
+      value: "AWS_PROXY"
+
+
+
+
+

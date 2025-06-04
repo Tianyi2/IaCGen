@@ -1,0 +1,20 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_62B"
+  name: "user intent for row 62B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::RDS::DBInstance"
+      attribute: "DBInstanceClass"
+      operator: "contains"
+      value: "db.t3.large"
+
+    - cond_type: "connection"
+      resource_types:
+        - "AWS::RDS::DBInstance"
+      connected_resource_types:
+        - "AWS::RDS::DBParameterGroup"
+      operator: "exists"

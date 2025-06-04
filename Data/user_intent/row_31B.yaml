@@ -1,0 +1,15 @@
+metadata:
+  id: "UIV_CUSTOM_ROW_31B"
+  name: "user intent for row 31B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ElasticLoadBalancingV2::LoadBalancer"
+      attribute: "Scheme"
+      operator: "contains"
+      value: "internet-facing"
+
+

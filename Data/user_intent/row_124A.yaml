@@ -1,0 +1,42 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_124A"
+  name: "user intent for row 124A"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "TableName"
+      operator: "contains"
+      value: "Music"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::DynamoDB::Table"
+      attribute: "GlobalSecondaryIndexes.IndexName"
+      operator: "contains"
+      value: "Artist-Index"
+
+    # - cond_type: "attribute"
+    #   resource_types:
+    #     - "AWS::Pipes::Pipe"
+    #   attribute: "TargetParameters.*.InputTemplate"
+    #   operator: "exists"
+    # - cond_type: "attribute"
+    #   resource_types:
+    #     - "AWS::Batch::JobDefinitione"
+    #   attribute: "PlatformCapabilities"
+    #   operator: "contains"
+    #   value: "FARGATE"
+
+    # - cond_type: "attribute"
+    #   resource_types:
+    #     - "AWS::Batch::JobDefinitione"
+    #   attribute: "RetryStrategy.Attempts"
+    #   operator: "greater_than_or_equal"
+    #   value: 1
+
+
+

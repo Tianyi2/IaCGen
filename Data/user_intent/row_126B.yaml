@@ -1,0 +1,39 @@
+metadata: 
+  id: "UIV_CUSTOM_ROW_126B"
+  name: "user intent for row 126B"
+  category: "USER_INTENT"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "HttpMethod"
+      operator: "within"
+      value: 
+        - "PUT"
+        - "GET"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "ApiKeyRequired"
+      operator: "is_false"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "Integration.RequestTemplates"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "Integration.Uri"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ApiGateway::Method"
+      attribute: "Integration.Credentials"
+      operator: "exists"
