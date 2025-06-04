@@ -19,7 +19,7 @@ CHATGPT_API_KEY=your_actual_gpt_api_key_here
 CLAUDE_API_KEY=your_actual_claude_api_key_here
 DEEPSEEK_API_KEY=your_actual_deepseek_api_key_here
 ```
-6. Follow the instructions in [Code/README.md](https://github.com/Tianyi2/IaCGen/tree/main/Code) to execute the IaCGen.
+6. Follow the instructions in [Code/README.md](https://github.com/Tianyi2/IaCGen/blob/main/Code/README.md) to execute the IaCGen.
 
 
 ## Project Structure
