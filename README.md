@@ -8,8 +8,8 @@
 1. Download the project
 2. [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [setup credentials](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html)
 3. Download required libraries in the [requirement.txt](https://github.com/Tianyi2/IaCGen/blob/main/requirements.txt)
-4. *Obtain the following LLM model inference API keys as appropriate, depending on which of our currently supported models you want to perform evaluation on:
-- [OpenAI API](https://platform.openai.com/docs/quickstart/account-setup): for GPT-4o and o3-mini
+4. *Obtain the following LLM model inference API keys as appropriate. Currently IaCGen support all models from the following three providers:
+- [OpenAI API](https://platform.openai.com/docs/quickstart/account-setup): for GPT-4o and o3-mini (Used in the paper)
 - [Anthropic API](https://console.anthropic.com/): for Claude-3-5-Sonnet and Claude-3-7-Sonnet
 - [DeepSeek API](https://platform.deepseek.com/): for DeepSeek-R1 and DeepSeek-S3
 5. Add a `.env` file under the `IaCGen` directory with your own API key:
