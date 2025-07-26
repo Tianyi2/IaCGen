@@ -1,14 +1,14 @@
 row_number,ground_truth_path,prompt
-0,Data\groud_truth\template\sqs_easy.yaml,We need create an AWS SQS queue with basic configuration.
-1,Data\groud_truth\template\sns_easy.yaml,"We need create an AWS SNS with notification sending to email ""test@test.com""."
-2,Data\groud_truth\template\s3_easy.yaml,We need creating an Amazon S3 bucket with defaults
-3,Data\groud_truth\template\s3_webhost_and_deletion_policy.yaml,We need to create an Amazon S3 bucket for website hosting and with a DeletionPolicy
-4,Data\groud_truth\template\ec2_easy.yaml,We need to create an EC2 instance with the latest Amazon Linux 2 AMI
-5,Data\groud_truth\template\DynamoDB_easy.yaml,"We need to create a DynamoDB table about ArtistId, Concert, and TicketSales."
+0,Data\groud_truth\template\sqs_easy.yaml,We need a CloudFormation template that creates an AWS SQS queue with basic configuration.
+1,Data\groud_truth\template\sns_easy.yaml,"We need a CloudFormation template that creates an AWS SNS with notification sending to email ""test@test.com""."
+2,Data\groud_truth\template\s3_easy.yaml,We need a CloudFormation template that creates an Amazon S3 bucket with defaults
+3,Data\groud_truth\template\s3_webhost_and_deletion_policy.yaml,We need a CloudFormation template that creates an Amazon S3 bucket for website hosting and with a DeletionPolicy
+4,Data\groud_truth\template\ec2_easy.yaml,We need a CloudFormation template that creates an EC2 instance with the latest Amazon Linux 2 AMI
+5,Data\groud_truth\template\DynamoDB_easy.yaml,"We need a CloudFormation template that creates a DynamoDB table about ArtistId, Concert, and TicketSales."
 6,Data\groud_truth\template\EC2InstanceWithSecurityGroupSample.yaml,We need a CloudFormation template of an EC2 instance with Security Group that is able to deploy on AWS successfully.
 7,Data\groud_truth\template\virtualmachine.yaml,We need a CloudFormation template that creates a basic EC2 instance (`t3.micro`) with secure remote management capabilities using AWS Systems Manager (SSM). The solution uses region-specific AMIs for compatibility and attaches a minimal security group to the instance. 
 8,Data\groud_truth\template\CloudWatch_Dashboard_NAT_FlowLogs.yaml,"We need a CloudFormation template that creates a CloudWatch Dashboard with four CloudWatch Logs Insights log widgets that query VPC flow logs for NAT Gateway. The solution should iclude widgets for top source IPs by outbound traffic and rejected connections, using CloudWatch Logs Insights queries to filter and aggregate NAT Gateway-specific data (`interfaceId like 'eni-'`).  "
-9,Data\groud_truth\template\EFS_encrypted_one_zone.yaml,We need to create an encrypted One Zone file system in the us-east-1a Availability Zone.
+9,Data\groud_truth\template\EFS_encrypted_one_zone.yaml,We need a CloudFormation template that creates an encrypted One Zone file system in the us-east-1a Availability Zone.
 10,Data\groud_truth\template\EC2_Instance_With_Ephemeral_Drives.yaml,We need a CloudFormation template of an EC2 instance with ephemeral drives attached using EC2 block device mappings that is able to deploy on AWS successfully. This template should automatically fetch the latest Amazon Linux 2 AMI via SSM Parameter Store and create an SSH key pair for secure access. Note the template should deploy the EC2 in pre-exist default vpc/subnet.
 11,Data\groud_truth\template\dynamo.yaml,We need a CloudFormation template that creates a DynamoDB table for mobile notifications reporting. The DynamoDB table should has a global secondary index on `type` and `sentTime` for time-based queries. Configure pay-per-request billing for cost efficiency with unpredictable workloads and TTL auto-expiry for automatic cleanup of stale data. 
 12,Data\groud_truth\template\EIP_With_Association.yaml,We need a CloudFormation template of an EC2 instance with an Elastic IP address and SSH access controls associated that is able to deploy on AWS successfully. Note the EC2 instance can just create in the default vpc/subnet.
