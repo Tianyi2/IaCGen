@@ -3,6 +3,7 @@
 2. [iac_with_deployability.csv](https://github.com/Tianyi2/IaCGen/blob/main/Data/iac_with_deployability.csv) is the benchmark with addtional information about the feedback used when execute IaCGen.
 3. [iac_with_difficulty_levels.csv](https://github.com/Tianyi2/IaCGen/blob/main/Data/iac_with_difficulty_levels.csv) is the benchmark with the difficulty level and additional info about each row.
 4. [iac_with_user_intent.csv](https://github.com/Tianyi2/IaCGen/blob/main/Data/iac_with_user_intent.csv) is the benchmark with necessary information for the user intent validation.
+5. [iac_with_user_intent.csv](https://github.com/Tianyi2/IaCGen/blob/main/Data/benchmark_included_aws_resources.csv) present all the AWS services included in the benchmark.
 
 
 ### iac_with_difficulty_levels.csv
