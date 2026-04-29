@@ -3,6 +3,7 @@
 
 `DPIaC-Eval` is the first deployablility-focused IaC benchmark that focuses on CloudFormation and AWS.
 
+Check the [paper](https://conf.researchr.org/details/fse-2026/fse-2026-research-papers/43/Deployability-Centric-Infrastructure-as-Code-Generation-Fail-Learn-Refine-and-Suc) at FSE 2026.
 
 ## Getting Started
 1. Download the project
